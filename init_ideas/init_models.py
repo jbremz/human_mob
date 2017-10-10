@@ -2,27 +2,11 @@
 from utils import disp
 import numpy as np
 
-class simple_gravity:
+class mob_model:
 	'''
-	The simple gravity model
+	Base human mobility model class
 
 	'''
-	def __init__(self, popDist, locCoords, beta, K):
-		self.beta = beta # inverse distance exponent
-		self.popDist = popDist # list of populations in each location
-		self.K = K # fitting parameter
-		self.locCoords = locCoords # an array of coordinates of the locations 
-
-	def flux(self, i, j):
-		'''
-		Takes the indices of two locations and returns the flux between them
-
-		'''
-		popi, popj = self.popDist[i], self.popDist[j]
-		r = disp(self.locCoords[i], self.locCoords[j])
-		n = self.K * (popi*popj)/r**self.beta
-
-		return n 
 
 	def ODM(self):
 		'''
@@ -41,6 +25,28 @@ class simple_gravity:
 		return m
 
 
+class simple_gravity(mob_model):
+	'''
+	The simple gravity human mobility model
+
+	'''
+
+	def __init__(self, popDist, locCoords, beta, K):
+		self.beta = beta # inverse distance exponent
+		self.popDist = popDist # list of populations in each location
+		self.K = K # fitting parameter
+		self.locCoords = locCoords # an array of coordinates of the locations 
+
+	def flux(self, i, j):
+		'''
+		Takes the indices of two locations and returns the flux between them
+
+		'''
+		popi, popj = self.popDist[i], self.popDist[j]
+		r = disp(self.locCoords[i], self.locCoords[j])
+		n = self.K * (popi*popj)/r**self.beta
+
+		return n 
 
 
 
