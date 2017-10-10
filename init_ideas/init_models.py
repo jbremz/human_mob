@@ -30,11 +30,12 @@ class simple_gravity:
 
 		'''
 		size = len(self.locCoords)
-		m = np.ones((size, size))
+		m = np.zeros((size, size))
 
-		for i in range(size-1):
+		for i in range(size):
 			for j in range(i+1,size):
-				f = self.flux(0,j)
+				f = self.flux(i,j)
+				print([i,j], f)
 				m[i][j], m[j][i] = f, f
 
 		return m
