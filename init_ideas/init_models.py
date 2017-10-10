@@ -30,7 +30,7 @@ class simple_gravity:
 
 		'''
 		size = len(self.locCoords)
-		m = np.zeros((size, size))
+		m = np.zeros((size, size)) # original OD matrix to be filled with fluxes
 
 		for i in range(size):
 			for j in range(i+1,size):
