@@ -36,7 +36,7 @@ class simple_gravity:
 			for j in range(i+1,size):
 				f = self.flux(i,j)
 				print([i,j], f)
-				m[i][j], m[j][i] = f, f
+				m[i][j], m[j][i] = f, f # symmetrical
 
 		return m
 
