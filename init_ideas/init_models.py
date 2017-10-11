@@ -29,7 +29,7 @@ class mob_model:
 	Base human mobility model class
 	'''        
 	def __init__(self, pop):
-		self.pop = pop
+		self.pop = pop # the population object
 
 	def ODM(self):
 		'''
@@ -54,7 +54,7 @@ class simple_gravity(mob_model):
 
 	'''
 
-	def __init__(self, pop, popDist, locCoords, beta, K):
+	def __init__(self, pop, beta, K):
 		super().__init__(pop)
 		self.beta = beta # inverse distance exponent
 		self.K = K # fitting parameter
