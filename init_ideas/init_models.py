@@ -81,7 +81,7 @@ class radiation(mob_model):
         '''
         pop = self.pop
         popi, popj = pop.popDist[i], pop.popDist[j]
-        O_i = popi
-        n = popi*(popi*popj)/float((popi+pop.s(i, j))*(popi+pop.s(i, j)+popj))
+        popSij = pop.s(i, j)
+        n = popi*(popi*popj)/float((popi+popSij)*(popi+popSij+popj))
         
         return n
