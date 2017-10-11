@@ -54,7 +54,7 @@ class simple_gravity(mob_model):
 
 	'''
 
-	def __init__(self, popDist, locCoords, beta, K):
+	def __init__(self, pop, popDist, locCoords, beta, K):
 		super().__init__(pop)
 		self.beta = beta # inverse distance exponent
 		self.K = K # fitting parameter
@@ -67,7 +67,7 @@ class simple_gravity(mob_model):
 		pop = self.pop
 		popi, popj = pop.popDist[i], pop.popDist[j]
 		r = disp(pop.locCoords[i], pop.locCoords[j])
-		self.K * (popi*popj)/r**self.beta
+		n = self.K * (popi*popj)/r**self.beta
 	    
 		return n 
     
