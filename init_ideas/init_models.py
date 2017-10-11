@@ -36,11 +36,12 @@ class mob_model:
         urns the predicted origin-destination flow matrix for the population distribution
 
         '''
-        e = len(self.locCoords)
-        np.zeros((size, size)) # original OD matrix to be filled with fluxes
+        pop = self.pop
+        e = len(pop.locCoords)
+        m = np.zeros((pop.size, pop.size)) # original OD matrix to be filled with fluxes
 
-        for i in range(size):
-            for j in range(i+1,size):
+        for i in range(pop.size):
+            for j in range(i+1,pop.size):
                 f = self.flux(i,j)
                 print([i,j], f)
                 m[i][j], m[j][i] = f, f # symmetrical
