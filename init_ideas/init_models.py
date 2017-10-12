@@ -54,16 +54,29 @@ class mob_model:
 		return m
 
 
-class simple_gravity(mob_model):
+class gravity(mob_model):
 	'''
-	The simple gravity human mobility model
+	The gravity human mobility model
 
 	'''
 
-	def __init__(self, pop, beta, K):
+	def __init__(self, pop, alpha, beta, gamma, K, **kwargs):
 		super().__init__(pop)
-		self.beta = beta # inverse distance exponent
+		kwargs.setdefault('exp', False)
+		self.alpha = alpha # population i exponent
+		self.beta = beta # population j exponent
+		self.gamma = gamma # distance exponent
 		self.K = K # fitting parameter
+		self.exp = kwargs['exp'] # True if exponential decay function is used, False if power decay is used
+
+	def f(self, r):
+		'''
+		The distance decay function
+		'''
+		if self.exp:
+			return np.exp(-self.gamma*r)
+		else:
+			return r**(-self.gamma)
 		
 	def flux(self, i, j):
 		'''
@@ -73,7 +86,7 @@ class simple_gravity(mob_model):
 		pop = self.pop
 		popi, popj = pop.popDist[i], pop.popDist[j]
 		r = disp(pop.locCoords[i], pop.locCoords[j])
-		n = self.K * (popi*popj)/r**self.beta
+		n = self.K * ((popi**self.alpha)*(popj**self.beta))*self.f(r)
 		
 		return n 
 	
@@ -94,10 +107,10 @@ class radiation(mob_model):
 
 # Test Data
 
-# popDist = [3,5,6,2,1]
-# locCoords = np.array([[0,0],[1,3],[4,7],[-3,-5],[6,-9]])
-# beta = 0.2  
-# K = 10
+popDist = [3,5,6,2,1]
+locCoords = np.array([[0,0],[1,3],[4,7],[-3,-5],[6,-9]])
+beta = 0.2  
+K = 10
 
 
 
