@@ -135,19 +135,14 @@ class opportunities(mob_model):
 		
 # Test Data
 
-<<<<<<< HEAD
-# popDist = [3,5,6,2,1]
-# locCoords = np.array([[0,0],[1,3],[4,7],[-3,-5],[6,-9]])
-# beta = 0.2  
-# K = 10
-# sample_pop = init_models.pop_distribution(popDist, locCoords)
 
-=======
+
+
 popDist = [3,5,6,2,1]
 locCoords = np.array([[0,0],[1,3],[4,7],[-3,-5],[6,-9]])
 beta = 0.2  
 K = 10
->>>>>>> 02bf911a0c3ffd3bf8c987abb1b91e44fb7fea3f
+
 
 
 
