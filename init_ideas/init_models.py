@@ -135,9 +135,6 @@ class opportunities(mob_model):
 		
 # Test Data
 
-
-
-
 popDist = [3,5,6,2,1]
 locCoords = np.array([[0,0],[1,3],[4,7],[-3,-5],[6,-9]])
 beta = 0.2  
