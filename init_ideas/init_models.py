@@ -85,3 +85,4 @@ class radiation(mob_model):
         n = popi*(popi*popj)/float((popi+pop.s(i, j))*(popi+pop.s(i, j)+popj))
         
         return n
+	
