@@ -3,6 +3,10 @@ from utils import disp
 import numpy as np
 
 class pop_distribution:
+	'''
+	A population distribution object which contains the location coordinates, populations at each location,
+	and methods for total sample population and population within circles etc.
+	'''
 	def __init__(self, popDist, locCoords):
 		self.locCoords = locCoords
 		self.popDist = popDist
@@ -56,7 +60,7 @@ class mob_model:
 
 class gravity(mob_model):
 	'''
-	The gravity human mobility model
+	The gravity human mobility model [Masucci 2013]
 
 	'''
 
@@ -92,7 +96,7 @@ class gravity(mob_model):
 	
 class radiation(mob_model):
 	'''
-	The normalised radiation human mobility model
+	The normalised radiation human mobility model [Masucci 2013]
 	'''   
 	def flux(self, i, j):
 		'''
@@ -118,7 +122,7 @@ class opportunities(mob_model):
 		to_sum = []
 		for k in range(pop.size):
 			if k != j:
-				a = np.exp((-self.gamma*pop.s(i, k)))-(np.exp(-self.gamma*(pop.s(i, k)+pop.Dist[k])))
+				a = np.exp((-self.gamma*pop.s(i, k)))-(np.exp(-self.gamma*(pop.s(i, k)+pop.popDist[k]))) # TODO changed pop.Dist to pop.popDist here, hope this is right?
 				to_sum.append(a)
 		return sum(to_sum)
 	
@@ -129,7 +133,7 @@ class opportunities(mob_model):
 		pop = self.pop
 		popi, popj = pop.popDist[i], pop.popDist[j]
 		popSij = pop.s(i, j)
-		a = np.exp((-self.gamma*popSij)-(np.exp(-self.gamma*(popSij)+pop.Dist[j])))
+		a = np.exp((-self.gamma*popSij)-(np.exp(-self.gamma*(popSij)+pop.popDist[j]))) # TODO changed pop.Dist to pop.popDist here, hope this is right?
 		n = self.norm_factor(i, j)*popi*a
 		return n
 		
