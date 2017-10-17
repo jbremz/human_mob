@@ -1,39 +1,10 @@
-
 from utils import disp
 import numpy as np
-
-class pop_distribution:
-	def __init__(self, popDist, locCoords):
-		self.locCoords = locCoords
-		self.popDist = popDist
-		self.size = len(self.locCoords)
-		
-	def s(self, i, j):
-		'''
-		Takes the indices of two locations i, j and returns the population in a circle of radius r 
-		(= distance between two locations) centred on i 
-		'''
-		r = disp(self.locCoords[i], self.locCoords[j])
-		closer_pop = []
-		for loc in range(self.size):
-			if disp(self.locCoords[i], self.locCoords[loc]) <= r:
-				if loc != i:
-					if loc != j:
-						closer_pop.append(self.popDist[loc])
-						
-		return sum(closer_pop)
-
-	def M(self):
-		'''
-		Returns the total sample population
-
-		'''
-		return np.sum(np.array(self.popDist))
 
 class mob_model:
 	'''
 	Base human mobility model class
-	'''        
+	'''
 	def __init__(self, pop):
 		self.pop = pop # the population object
 
@@ -50,7 +21,7 @@ class mob_model:
 			for j in range(i+1,pop.size):
 				f = self.flux(i,j)
 				m[i][j], m[j][i] = f, f # symmetrical
-				
+
 		return m
 
 
@@ -67,8 +38,6 @@ class gravity(mob_model):
 		self.beta = beta # population j exponent
 		self.gamma = gamma # distance exponent
 		self.K = K # fitting parameter
-<<<<<<< HEAD
-=======
 		self.exp = kwargs['exp'] # True if exponential decay function is used, False if power decay is used
 
 	def f(self, r):
@@ -79,8 +48,7 @@ class gravity(mob_model):
 			return np.exp(-self.gamma*r)
 		else:
 			return r**(-self.gamma)
->>>>>>> master
-		
+
 	def flux(self, i, j):
 		'''
 		Takes the indices of two locations and returns the flux between them
@@ -89,18 +57,13 @@ class gravity(mob_model):
 		pop = self.pop
 		popi, popj = pop.popDist[i], pop.popDist[j]
 		r = disp(pop.locCoords[i], pop.locCoords[j])
-<<<<<<< HEAD
-		n = self.K * (popi*popj)/r**self.beta
-=======
 		n = self.K * ((popi**self.alpha)*(popj**self.beta))*self.f(r)
->>>>>>> master
-		
-		return n 
-	
+		return n
+
 class radiation(mob_model):
 	'''
 	The normalised radiation human mobility model
-	'''   
+	'''
 	def flux(self, i, j):
 		'''
 		Takes the indices of two locations i, j and returns the average flux from i to j
@@ -109,26 +72,28 @@ class radiation(mob_model):
 		popi, popj = pop.popDist[i], pop.popDist[j]
 		popSij = pop.s(i, j)
 		n = (popi/(1-popi/pop.M()))*(popi*popj)/float((popi+popSij)*(popi+popSij+popj)) # TODO how do we define Ti here?
-		
+
 		return n
-	
+
 class opportunities(mob_model):
-	''' 
+	'''
 	The intervening opportunities model
 	'''
 	def __init__(self, pop, gamma):
 		super().__init__(pop)
-		self.gamma = gamma 
-		
+		self.gamma = gamma
+
 	def norm_factor(self, i, j):
 		pop = self.pop
 		to_sum = []
 		for k in range(pop.size):
+			popk = pop.popDist[k]
+			popSik = pop.s(i, k)
 			if k != j:
-				a = np.exp((-self.gamma*pop.s(i, k)))-(np.exp(-self.gamma*(pop.s(i, k)+pop.Dist[k])))
+				a = np.exp((-self.gamma*popSik))-(np.exp(-self.gamma*(popSik+popk)))
 				to_sum.append(a)
 		return sum(to_sum)
-	
+
 	def flux(self, i, j):
 		'''
 		Takes the indices of two locations i, j and returns the average flux from i to j
@@ -136,24 +101,16 @@ class opportunities(mob_model):
 		pop = self.pop
 		popi, popj = pop.popDist[i], pop.popDist[j]
 		popSij = pop.s(i, j)
-		a = np.exp((-self.gamma*popSij)-(np.exp(-self.gamma*(popSij)+pop.Dist[j])))
+		a = np.exp((-self.gamma*popSij)-(np.exp(-self.gamma*(popSij)+popj)))
 		n = self.norm_factor(i, j)*popi*a
 		return n
-		
+
 # Test Data
 
-<<<<<<< HEAD
-# popDist = [3,5,6,2,1]
-# locCoords = np.array([[0,0],[1,3],[4,7],[-3,-5],[6,-9]])
-# beta = 0.2  
-# K = 10
-# sample_pop = init_models.pop_distribution(popDist, locCoords)
-=======
 popDist = [3,5,6,2,1]
 locCoords = np.array([[0,0],[1,3],[4,7],[-3,-5],[6,-9]])
-beta = 0.2  
+beta = 0.2
 K = 10
->>>>>>> master
 
 
 
