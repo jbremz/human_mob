@@ -22,6 +22,8 @@ class mob_model:
 				f = self.flux(i,j)
 				m[i][j], m[j][i] = f, f # symmetrical
 
+		return m
+
 # Test Data
 
 popDist = [3,5,6,2,1]
