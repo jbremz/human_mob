@@ -23,11 +23,3 @@ class mob_model:
 				m[i][j], m[j][i] = f, f # symmetrical
 
 		return m
-
-# Test Data
-
-popDist = [3,5,6,2,1]
-locCoords = np.array([[0,0],[1,3],[4,7],[-3,-5],[6,-9]])
-beta = 0.2
-K = 10
-
