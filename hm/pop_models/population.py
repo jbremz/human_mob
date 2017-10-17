@@ -1,4 +1,4 @@
-from utils import disp
+from hm.utils.utils import disp
 import numpy as np
 
 class pop_distribution:
