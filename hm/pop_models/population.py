@@ -1,10 +1,10 @@
-from utils import disp
+from hm.utils.utils import disp
 import numpy as np
 
 class pop_distribution:
 	def __init__(self, popDist, locCoords):
-		self.locCoords = locCoords
-		self.popDist = popDist
+		self.locCoords = np.array(locCoords)
+		self.popDist = np.array(popDist)
 		self.size = len(self.locCoords)
 		
 	def s(self, i, j):

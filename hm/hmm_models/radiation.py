@@ -1,6 +1,6 @@
-from utils import disp
+from hm.utils.utils import disp
 import numpy as np
-from init_models import mob_model
+from .base_model import mob_model
 
 class radiation(mob_model):
 	'''
