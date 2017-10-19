@@ -1,6 +1,6 @@
-from hm.hmm_models.gravity import gravity
-from hm.hmm_models.radiation import radiation
-from hm.hmm_models.opportunities import opportunities
+from hm.hm_models.gravity import gravity
+from hm.hm_models.radiation import radiation
+from hm.hm_models.opportunities import opportunities
 from hm.pop_models.population import pop_distribution as pop_dist
 
 popDist = [3,4,7,5,6]
