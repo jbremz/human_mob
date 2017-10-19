@@ -13,6 +13,6 @@ N = 20
 
 p = pop_random(N)
 p1 = pop_explicit(locCoords, popDist)
-g = gravity(p, alpha, beta, gamma,K)
+g = gravity(p, alpha, beta, gamma)
 r = radiation(p)
 o = opportunities(p, gamma) # TODO seems a little slow, probably just the nature of the algorithm
