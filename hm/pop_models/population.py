@@ -40,12 +40,3 @@ class pop_distribution:
 
 		'''
 		return np.sum(np.array(self.popDist))
-
-def random(N, uniform=True):
-	'''
-	Returns random distribution of N locations in 2D space (0<x<1, 0<y<1), and uniform population distribution of length N
-
-	TODO: random size distribution also?
-
-	'''
-	return np.random.rand(N,2), np.ones(N)
