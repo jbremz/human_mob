@@ -13,9 +13,17 @@ class explicit(pop_distribution):
 		super().__init__()
 
 	def loc_dist(self):
+		'''
+		Returns the 2D population distribution
+
+		'''
 
 		return self.locCoords
 
 	def pop_dist(self):
+		'''
+		Returns the population distribution
+
+		'''
 
 		return self.popDist
