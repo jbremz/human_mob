@@ -9,14 +9,15 @@ import numpy as np
 
 popDist = [3,4,7,5,6]
 locCoords = [[2,3],[3,2],[-5,9],[0,1],[1,-8]]
-alpha, beta, K = 1, 1, 1
+alpha, beta = 1, 1
 gamma = 0.2
 N = 30
+gamma_opp = 0.5
 
 p = pop_random(N)
 g = gravity(p, alpha, beta, gamma)
 r = radiation(p)
-o = opportunities(p, gamma)
+o = opportunities(p, gamma_opp)
 
 distance = []
 flux_gravity = []

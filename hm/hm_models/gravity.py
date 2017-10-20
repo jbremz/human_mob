@@ -22,8 +22,9 @@ class gravity(mob_model):
 		for i in range(self.pop.size):
 			for j in range(self.pop.size):
 				if j != i:
-					factor.append(self.pop.pop_dist()[i]*self.pop.pop_dist()[j]*self.f(self.pop.r(i,j)))
-		return 1./sum(factor)
+					factor.append(self.pop.popDist[i]*self.pop.popDist[j]*self.f(self.pop.r(i,j)))
+
+		return 1./np.sum(np.array(factor))
 
 	def f(self, r):
 		'''
