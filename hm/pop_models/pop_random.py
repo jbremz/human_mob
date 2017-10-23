@@ -9,9 +9,9 @@ class random(pop_distribution):
 
 	'''
 
-	def __init__(self, N, uniform=True):
+	def __init__(self, N, uniformSize=True):
 		self.N = N
-		self.uniform = uniform
+		self.uniformSize = uniformSize # uniform population distribution between locations
 		super().__init__()
 
 	def pop_dist(self):
@@ -21,7 +21,7 @@ class random(pop_distribution):
 		TODO: non-uniform
 
 		'''
-		if self.uniform:
+		if self.uniformSize:
 			return np.ones(self.N)
 
 	def loc_dist(self):

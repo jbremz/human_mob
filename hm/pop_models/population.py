@@ -33,7 +33,6 @@ class pop_distribution:
 		r = disp(self.locCoords[i], self.locCoords[j])
 		return r
 
-
 	def M(self):
 		'''
 		Returns the total sample population

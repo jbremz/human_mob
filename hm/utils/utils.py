@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def disp(loci, locj):
 	'''
@@ -7,3 +8,17 @@ def disp(loci, locj):
 	'''
 	s = locj - loci
 	return np.sqrt(np.dot(s,s))
+
+def plot_pop(population, **kwargs):
+	'''
+	Takes a population object and plots the locations
+
+	TODO: area proportional to population? 
+
+	'''
+
+	coords = population.locCoords
+	plt.scatter(coords[:,0], coords[:,1], s=4)
+	plt.show()
+
+
