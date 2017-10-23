@@ -22,8 +22,8 @@ class tripoint(pop_distribution):
 		'''
 
 		loci = [0.5+self.xdisp/2., 0.5]
-		locj = [0.5-self.ydisp/2., 0.5-self.ydisp/2.]
-		lock = [0.5+self.ydisp/2., 0.5+self.ydisp/2.]
+		locj = [0.5-self.xdisp/2., 0.5-self.ydisp/2.]
+		lock = [0.5-self.xdisp/2., 0.5+self.ydisp/2.]
 
 		locs = np.random.rand(self.N-3,2)
 		ijk = np.array([loci, locj, lock])
