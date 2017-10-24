@@ -17,12 +17,11 @@ class gravity(mob_model):
 		self.pop = pop
 		self.exp = kwargs['exp'] # True if exponential decay function is used, False if power decay is used
 
-	def K(self):
+	def K(self, i):
 		factor = []
-		for i in range(self.pop.size):
-			for j in range(self.pop.size):
-				if j != i:
-					factor.append(self.pop.pop_dist()[i]*self.pop.pop_dist()[j]*self.f(self.pop.r(i,j)))
+		for j in range(self.pop.size):
+			if j != i:
+				factor.append(self.pop.pop_dist()[j]*self.f(self.pop.r(i,j)))
 		return 1./sum(factor)
 
 	def f(self, r):
