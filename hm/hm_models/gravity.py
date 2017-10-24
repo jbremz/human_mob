@@ -42,5 +42,5 @@ class gravity(mob_model):
 		pop = self.pop
 		popi, popj = pop.popDist[i], pop.popDist[j]
 		r = pop.r(i, j)
-		n = self.K() * ((popi**self.alpha)*(popj**self.beta))*self.f(r)
+		n = self.K(i) * ((popi**self.alpha)*(popj**self.beta))*self.f(r)
 		return n
