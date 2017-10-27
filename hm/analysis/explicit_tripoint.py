@@ -1,6 +1,8 @@
 from hm.pop_models.pop_random import random as pop_random
 from hm.hm_models.gravity import gravity
 import numpy as np
+import seaborn as sns; sns.set()
+import matplotlib.pyplot as plt 
 import copy
 
 def epsilon(x,y,N, size=1.):
@@ -29,9 +31,40 @@ def epsilon(x,y,N, size=1.):
 	g3 = gravity(p3, 1, 1, 2)
 	g2 = gravity(p2, 1, 1, 2)
 
-	eps = g2.flux(0,1) - (g3.flux(0,1)+g3.flux(0,2))
+	g2Flux = g2.flux(0,1)
+
+	eps = g2Flux - (g3.flux(0,1)+g3.flux(0,2))
 
 	return np.array(eps)
+
+
+
+def anaTriPoint(xmin, xmax, ymin, ymax, n, N):
+	'''
+	Finds values of epsilon in an nxn 2D sample space for x and y at fixed N random locations
+
+	'''
+
+	x = np.linspace(xmin, xmax, n)
+	y = np.linspace(ymin, ymax, n)
+
+	xy = np.array(np.meshgrid(x, y)).T # 2D Sample Space
+
+	epsVals = np.zeros((n,n))
+
+	for j, row in enumerate(xy):
+		for i, pair in enumerate(row):
+			epsVals[j][i] = epsilon(pair[0], pair[1], N)
+
+	nanMask = np.isnan(epsVals)
+
+	epsVals[nanMask] = 1
+
+	ax = sns.heatmap(epsVals)
+	plt.show()
+
+	return xy, epsVals
+
 
 
 
