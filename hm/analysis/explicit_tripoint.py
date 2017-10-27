@@ -3,6 +3,7 @@ from hm.hm_models.gravity import gravity
 import numpy as np
 import seaborn as sns; sns.set()
 import matplotlib.pyplot as plt 
+from matplotlib.ticker import FormatStrFormatter
 import copy
 
 def epsilon(x,y,N, size=1.):
@@ -33,13 +34,13 @@ def epsilon(x,y,N, size=1.):
 
 	g2Flux = g2.flux(0,1)
 
-	eps = g2Flux - (g3.flux(0,1)+g3.flux(0,2))
+	eps = (g2Flux - (g3.flux(0,1)+g3.flux(0,2)))/g2Flux
 
 	return np.array(eps)
 
 
 
-def anaTriPoint(xmin, xmax, ymin, ymax, n, N):
+def anaTP(xmin, xmax, ymin, ymax, n, N):
 	'''
 	Finds values of epsilon in an nxn 2D sample space for x and y at fixed N random locations
 
@@ -49,6 +50,7 @@ def anaTriPoint(xmin, xmax, ymin, ymax, n, N):
 	y = np.linspace(ymin, ymax, n)
 
 	xy = np.array(np.meshgrid(x, y)).T # 2D Sample Space
+	xy = np.swapaxes(xy,0,1)
 
 	epsVals = np.zeros((n,n))
 
@@ -60,7 +62,19 @@ def anaTriPoint(xmin, xmax, ymin, ymax, n, N):
 
 	epsVals[nanMask] = 1
 
-	ax = sns.heatmap(epsVals)
+	epsVals = np.flip(epsVals, 0)
+
+	xticks = np.around(x*np.sqrt(N), 2)
+	yticks = np.flip(np.around(y*np.sqrt(N), 2), 0)
+
+	ax = sns.heatmap(epsVals, xticklabels=xticks, yticklabels=yticks, square=True) # TODO contour plot
+
+	plt.rc('text', usetex=True)
+	plt.rc('font', family='serif')
+
+	ax.set_xlabel(r'$x \sqrt{N}$')
+	ax.set_ylabel(r'$y \sqrt{N}$')
+
 	plt.show()
 
 	return xy, epsVals
