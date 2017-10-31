@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import copy
 
-def epsilon(x,y,N, size=1., ib=True):
+def epsilon(x,y,N, size=1., ib=True, seed=False):
 	'''
 	Takes the x and y displacements defined in the tripoint problem and returns
 	the error between treating the satellite locations as one and as separate
@@ -14,7 +14,11 @@ def epsilon(x,y,N, size=1., ib=True):
 	ib = False --> calulate Tbi (i.e. flow in opposite direction)
 
 	'''
-	p = pop_random(N)
+	if type(seed) is bool:
+		p = pop_random(N)
+
+	else: # use seed for random population distribution so that it can be replicated
+		p = pop_random(N, seed=seed)
 
 	loci = [0.5+x/2., 0.5]
 	locj = [0.5-x/2., 0.5-y/2.]
@@ -43,13 +47,14 @@ def epsilon(x,y,N, size=1., ib=True):
 		g2Flux = g2.flux(1,0)
 		eps = (g2Flux - (g3.flux(1,0)+g3.flux(2,0)))/g2Flux
 
-	return np.array(eps)
+	return eps
 
 
 
 def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True):
 	'''
-	Finds values of epsilon in an nxn 2D sample space for x and y at fixed N random locations
+	Finds values of epsilon in an nxn 2D sample space for x and y at fixed N random locations and plots a heatmap
+	ib is a boolean to consider the direction of flow (see docstring for epsilon)
 
 	'''
 
@@ -61,9 +66,11 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True):
 
 	epsVals = np.zeros((n,n))
 
-	for j, row in enumerate(xy):
+	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+
+	for j, row in enumerate(xy): # fill sample space
 		for i, pair in enumerate(row):
-			epsVals[j][i] = epsilon(pair[0], pair[1], N, ib=ib)
+			epsVals[j][i] = epsilon(pair[0], pair[1], N, ib=ib, seed=seed)
 
 	nanMask = np.isnan(epsVals)
 
@@ -81,6 +88,34 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True):
 
 	ax.set_xlabel(r'$x \sqrt{N}$')
 	ax.set_ylabel(r'$y \sqrt{N}$')
+
+	plt.show()
+
+	return
+
+def epsChangeY(ymin, ymax, x, n, N, ib=True):
+	'''
+	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations
+
+	'''
+	y = np.linspace(ymin, ymax, n)
+
+	epsVals = []
+
+	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+
+	for val in y:
+		epsVals.append(epsilon(x, val, N, ib=ib, seed=seed))
+
+	yEps = np.array([y * np.sqrt(N), np.array(epsVals)]).T
+
+	ax = sns.regplot(yEps[:,0], yEps[:,1], fit_reg=False)
+
+	plt.rc('text', usetex=True)
+	plt.rc('font', family='serif')
+
+	ax.set_xlabel(r'$y \sqrt{N}$')
+	ax.set_ylabel(r'$\epsilon$')
 
 	plt.show()
 
