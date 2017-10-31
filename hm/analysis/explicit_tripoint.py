@@ -1,5 +1,6 @@
 from hm.pop_models.pop_random import random as pop_random
 from hm.hm_models.gravity import gravity
+from hm.utils.utils import plot_pop
 import numpy as np
 import seaborn as sns; sns.set()
 import matplotlib.pyplot as plt 
@@ -42,7 +43,6 @@ def epsilon(x,y,N, size=1., ib=True, seed=False):
 		g2Flux = g2.flux(0,1)
 		eps = (g2Flux - (g3.flux(0,1)+g3.flux(0,2)))/g2Flux
 
-	# TODO This doesn't work
 	else: # from the satellites to i 
 		g2Flux = g2.flux(1,0)
 		eps = (g2Flux - (g3.flux(1,0)+g3.flux(2,0)))/g2Flux
@@ -81,6 +81,7 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True):
 	xticks = np.around(x*np.sqrt(N), 2)
 	yticks = np.flip(np.around(y*np.sqrt(N), 2), 0)
 
+	# Plot heatmap for eps with x-y
 	ax = sns.heatmap(epsVals, xticklabels=xticks, yticklabels=yticks, square=True) # TODO contour plot
 
 	plt.rc('text', usetex=True)
@@ -88,6 +89,10 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True):
 
 	ax.set_xlabel(r'$x \sqrt{N}$')
 	ax.set_ylabel(r'$y \sqrt{N}$')
+
+	# Plot location distribution
+	plt.figure()
+	plot_pop(pop_random(N, seed=seed))
 
 	plt.show()
 
