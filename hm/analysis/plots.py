@@ -28,7 +28,7 @@ def plot_flow(population, model='all', alpha = 1, beta = 1, gamma = 0.2):
 	for i in range(p.size):
 		for j in range(p.size):
 			if i != j:
-				distance.append(p.r(i, j))
+				distance.append(p.r(i, j)*np.sqrt(p.size))
 
 				if model == 'all':
 					flux_gravity.append(g.flux(i, j))
@@ -44,7 +44,11 @@ def plot_flow(population, model='all', alpha = 1, beta = 1, gamma = 0.2):
 				if isinstance(model, opportunities) == True:
 					flux_opportunities.append(o.flux(i, j))
 
-	plt.xlabel(r'$ \frac{r}{\sqrt{N}}$')
+	plt.loglog(distance, flux_gravity, '.', label = 'gravity')
+	plt.loglog(distance, flux_radiation, '.', label = 'radiation')
+	plt.loglog(distance, flux_opportunities, '.', label = 'opportunities')
+
+	plt.xlabel(r'$ \~r$')
 	plt.ylabel('$p_{ij}$')
 	plt.legend()
 	plt.title('Log-log plot')

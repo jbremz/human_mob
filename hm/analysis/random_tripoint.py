@@ -6,29 +6,37 @@ import matplotlib.pyplot as plt
 import copy
 from hm.utils.utils import disp
 from scipy import interpolate
+from itertools import combinations
 
 
-N = 100
+N = 30
 alpha, beta = 1, 1
-gamma = 0.2
+gamma = 2.
 p = pop_random(N)
 g = gravity(p, alpha, beta, gamma)
 
-def neighbours(k):
+def neighb(i):
 	'''Returns a list of nearest neighobours pairs as a Numpy array.'''
 
 	neighbours = []
+	distance = []
+	js = []
+	for j in range(p.size):
+		if j != i:
+			distance.append(p.r(i, j))
+			js.append(j)
+	n = distance.index(min(distance))
+	neighbours.append([i, js[n]])
+
+	return np.array(neighbours)
+
+def neighbours(k):
+	neighbours = []
 	for i in range(p.size):
-		distance = []
-		for j in range(p.size):
-			if i != j:
-				distance.append(p.r(i, j))
-		n = distance.index(min(distance))
-		if i < j:
-			neighbours.append([i, n+1])
-		if i > j:
-			neighbours.append([i, n])
-	return np.array(neighbours[1:])
+		if i != k:
+			neighbours.append(neighb(i)[0])
+
+	return np.array(neighbours)
 
 def neighbours_dist(k):
 	'''
@@ -38,7 +46,7 @@ def neighbours_dist(k):
 
 	distance = []
 	for i in neighbours(k):
-		distance.append((p.r(i[0], i[1]))/np.sqrt(N))
+		distance.append((p.r(i[0], i[1])))
 
 	return np.array(distance)
 
@@ -53,9 +61,8 @@ def target_dist(i):
 	for n in neighbours(i):
 		x = (p.locCoords[n[0]][0]+ p.locCoords[n[1]][0])*0.5
 		y = (p.locCoords[n[0]][1]+ p.locCoords[n[1]][1])*0.5
-		r.append((disp(p.locCoords[i], np.array([x, y])))/np.sqrt(N))
+		r.append((disp(p.locCoords[i], np.array([x, y]))))
 	return np.array(r)
-
 
 def epsilon(i):
 	'''Using abs!!!'''
@@ -63,23 +70,57 @@ def epsilon(i):
 	for n in neighbours(i):
 		j, k = n[0], n[1]
 		p2 = copy.deepcopy(p)
-		if p2.locCoords[j][1] - p2.locCoords[k][1] > 0:
-			p2.locCoords[j][1] = p2.locCoords[j][1] - 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
-		else:
-			p2.locCoords[j][1] = p2.locCoords[j][1] + 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
-		if p2.locCoords[j][0] - p2.locCoords[k][0] > 0:
-			p2.locCoords[j][0] = p2.locCoords[j][0] - 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
-		else:
-			p2.locCoords[j][0] = p2.locCoords[j][0] + 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
-		p2.locCoords[k][1] = p2.locCoords[j][1]
-		p2.locCoords[k][0] = p2.locCoords[j][0]
+
+		#move j to midpoint
+
+		p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
+		p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
+
+		p2.popDist[j] = p2.popDist[k] + p2.popDist[j] #merge two populations
+		p2.popDist[k] = 0. #remove k
+		b = j #rename j
+
 		g2 = gravity(p2, alpha, beta, gamma)
-		eps = ((g2.flux(i, j) + g2.flux(i,k)) - (g.flux(i, j)+g.flux(i, k)))/(g2.flux(i, j) + g2.flux(i,k))
+		eps = (g2.flux(i, b) - (g.flux(i, j)+g.flux(i, k)))/(g2.flux(i, b))
 		epsValues.append(abs(eps))
 	return np.array(epsValues)
 
+def rev_epsilon(i):
+	'''Using abs!!!'''
+	epsValues = []
+	for n in neighbours(i):
+		j, k = n[0], n[1]
+		p2 = copy.deepcopy(p)
 
-def heatmap(i):
+		#move j to midpoint
+
+		p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
+		p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
+
+		p2.popDist[j] = p2.popDist[k] + p2.popDist[j] #merge two populations
+		p2.popDist[k] = 0. #remove k
+		b = j #rename j
+
+		g2 = gravity(p2, alpha, beta, gamma)
+		eps = (g2.flux(b, i) - (g.flux(j, i)+g.flux(k, i)))/(g2.flux(b, i))
+		epsValues.append(abs(eps))
+	return np.array(epsValues)
+
+def neighbours_dist_plot():
+	for i in range(p.size):
+		plt.plot(neighbours_dist(i)*np.sqrt(N), epsilon(i), '.')
+	plt.xlabel('$\~r_{jk}$')
+	plt.ylabel('$\epsilon$')
+	plt.show()
+
+def target_dist_plot():
+	for i in range(p.size):
+		plt.plot(target_dist(i)*np.sqrt(N), epsilon(i), '.')
+	plt.xlabel('$\~r_{ib}$')
+	plt.ylabel('$\epsilon$')
+	plt.show()
+
+'''def heatmap(i):
 	x = target_dist(i)
 	y = neighbours_dist(i)
 	epsVals = epsilon(i)
@@ -89,11 +130,4 @@ def heatmap(i):
 
 	ax = sns.heatmap(epsVals)
 	plt.show()
-	return x, y
-
-def neighbours_dist_plot():
-	for i in range(p.size):
-		plt.plot(neighbours_dist(i), epsilon(i), '.')
-	plt.xlabel('$\~r_{jk}$')
-	plt.ylabel('$\epsilon$')
-	plt.show()
+	return x, y'''
