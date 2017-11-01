@@ -32,19 +32,19 @@ def neighbours(k):
 
 def neighbours_dist(k):
 	'''
-	Returns the distance between two nearest neighbours as a Numpy array.
+	Returns the (scaled) distance between two nearest neighbours as a Numpy array.
 	The pair's index matches that of neighbours().
 	'''
 
 	distance = []
 	for i in neighbours(k):
-		distance.append(p.r(i[0], i[1]))
+		distance.append((p.r(i[0], i[1]))/np.sqrt(N))
 
 	return np.array(distance)
 
 def target_dist(i):
 	'''
-	Returns the distance between the midpoint between two nearest neighbours and the
+	Returns the (scaled) distance between the midpoint between two nearest neighbours and the
 	target location i as a Numpy array.
 	The pair's index matches that of neighbours().
 	'''
@@ -53,7 +53,7 @@ def target_dist(i):
 	for n in neighbours(i):
 		x = (p.locCoords[n[0]][0]+ p.locCoords[n[1]][0])*0.5
 		y = (p.locCoords[n[0]][1]+ p.locCoords[n[1]][1])*0.5
-		r.append(disp(p.locCoords[i], np.array([x, y])))
+		r.append((disp(p.locCoords[i], np.array([x, y])))/np.sqrt(N))
 	return np.array(r)
 
 
@@ -91,3 +91,9 @@ def heatmap(i):
 	plt.show()
 	return x, y
 
+def neighbours_dist_plot():
+	for i in range(p.size):
+		plt.plot(neighbours_dist(i), epsilon(i), '.')
+	plt.xlabel('$\~r_{jk}$')
+	plt.ylabel('$\epsilon$')
+	plt.show()
