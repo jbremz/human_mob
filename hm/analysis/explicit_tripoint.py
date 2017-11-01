@@ -7,14 +7,20 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import copy
 
-def epsilon(x,y,N, size=1., ib=True, seed=False):
+def epsilon(x,y,N, size=1., ib=True, seed=False, tildeM=False):
 	'''
 	Takes the x and y displacements defined in the tripoint problem and returns
 	the error between treating the satellite locations as one and as separate
+
 	ib = True --> calculate Tib 
 	ib = False --> calulate Tbi (i.e. flow in opposite direction)
 
+	seed = False --> use completely random pop dist
+	seed = int --> recreate a previous population distribution
+
 	'''
+	gamma = 2 # TODO try other exponents and other functions?
+
 	if type(seed) is bool:
 		p = pop_random(N)
 
@@ -26,18 +32,26 @@ def epsilon(x,y,N, size=1., ib=True, seed=False):
 	lock = [0.5-x/2., 0.5+y/2.]
 	locb = [0.5-x/2., 0.5]
 
-	sizeb = 2*size # TODO change to non-uniform size
-
 	p3 = copy.deepcopy(p) # the tripoint arrangement
 	p2 = copy.deepcopy(p) # the two-point arrangement
 
 	p3.locCoords = np.insert(p3.locCoords, 0, np.array([loci, locj, lock]), axis=0)
-	p2.locCoords = np.insert(p2.locCoords, 0, np.array([loci, locb]), axis=0)
 	p3.popDist = np.insert(p3.popDist, 0, np.array([size, size, size]), axis=0)
-	p2.popDist = np.insert(p2.popDist, 0, np.array([size, sizeb]), axis=0)
 
-	g3 = gravity(p3, 1, 1, 2) # TODO Gamma=2, try other exponents and other functions?
-	g2 = gravity(p2, 1, 1, 2)
+	g3 = gravity(p3, 1, 1, gamma) 
+
+	# Use definition of m_b with correction for the intra-location flow
+	# TODO: not sure about the motivation behind this definition + change to non-uniform size
+	if tildeM:
+		sizeb = 2*size - g3.flux(1,2) - g3.flux(2,1)
+	# use traditional definition of population mass m_b
+	else:
+		sizeb = 2*size 
+
+	p2.popDist = np.insert(p2.popDist, 0, np.array([size, sizeb]), axis=0)
+	p2.locCoords = np.insert(p2.locCoords, 0, np.array([loci, locb]), axis=0)
+
+	g2 = gravity(p2, 1, 1, gamma)
 
 	if ib: # From i to the satellites
 		g2Flux = g2.flux(0,1)
@@ -70,7 +84,7 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True):
 
 	for j, row in enumerate(xy): # fill sample space
 		for i, pair in enumerate(row):
-			epsVals[j][i] = epsilon(pair[0], pair[1], N, ib=ib, seed=seed)
+			epsVals[j][i] = abs(epsilon(pair[0], pair[1], N, ib=ib, seed=seed, tildeM=False))
 
 	nanMask = np.isnan(epsVals)
 
@@ -91,8 +105,8 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True):
 	ax.set_ylabel(r'$y \sqrt{N}$')
 
 	# Plot location distribution
-	plt.figure()
-	plot_pop(pop_random(N, seed=seed))
+	# plt.figure()
+	# plot_pop(pop_random(N, seed=seed))
 
 	plt.show()
 
@@ -110,11 +124,11 @@ def epsChangeY(ymin, ymax, x, n, N, ib=True):
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
 	for val in y:
-		epsVals.append(epsilon(x, val, N, ib=ib, seed=seed))
+		epsVals.append(abs(epsilon(x, val, N, ib=ib, seed=seed)))
 
 	yEps = np.array([y * np.sqrt(N), np.array(epsVals)]).T
 
-	ax = sns.regplot(yEps[:,0], yEps[:,1], fit_reg=False)
+	ax = sns.regplot(yEps[:,0], yEps[:,1], scatter_kws={'s':10}, fit_reg=False)
 
 	plt.rc('text', usetex=True)
 	plt.rc('font', family='serif')
