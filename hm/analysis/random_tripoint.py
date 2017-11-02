@@ -5,18 +5,19 @@ import seaborn as sns; sns.set()
 import matplotlib.pyplot as plt
 import copy
 from hm.utils.utils import disp
-from scipy import interpolate
+from scipy.interpolate import griddata
 from itertools import combinations
 
 
-N = 30
+
+N = 4
 alpha, beta = 1, 1
 gamma = 2.
 p = pop_random(N)
 g = gravity(p, alpha, beta, gamma)
 
 def neighb(i):
-	'''Returns a list of nearest neighobours pairs as a Numpy array.'''
+	'''Returns a list of the nearest neighobours of a given location as a Numpy array.'''
 
 	neighbours = []
 	distance = []
@@ -31,10 +32,24 @@ def neighb(i):
 	return np.array(neighbours)
 
 def neighbours(k):
+	'''
+	Returns a list of all nearest neighbours pairs - excluding the target location -
+	as a Numpy array,
+	'''
+
 	neighbours = []
 	for i in range(p.size):
 		if i != k:
-			neighbours.append(neighb(i)[0])
+			if k not in neighb(i):
+				neighbours.append(neighb(i)[0])
+
+
+	#for i in range(len(neighbours)):
+	#	for j in range(len(neighbours)):
+	#		if i != j:
+	#			print(i, j)
+	#			if set(neighbours[i]) == set(neighbours[j]):
+	#				neighbours.remove(neighbours[i])
 
 	return np.array(neighbours)
 
@@ -64,7 +79,7 @@ def target_dist(i):
 		r.append((disp(p.locCoords[i], np.array([x, y]))))
 	return np.array(r)
 
-def epsilon(i):
+def epsilon(i, tilde = False):
 	'''Using abs!!!'''
 	epsValues = []
 	for n in neighbours(i):
@@ -76,16 +91,20 @@ def epsilon(i):
 		p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
 		p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
 
-		p2.popDist[j] = p2.popDist[k] + p2.popDist[j] #merge two populations
+		if tilde == True:
+			p2.popDist[j] = p2.popDist[k] + p2.popDist[j] - p2.popDist[j]*g.flux(j, k) - p2.popDist[k]*g.flux(j, k)
+		else:
+			p2.popDist[j] = p2.popDist[k] + p2.popDist[j] #merge two populations
+
 		p2.popDist[k] = 0. #remove k
 		b = j #rename j
-
 		g2 = gravity(p2, alpha, beta, gamma)
 		eps = (g2.flux(i, b) - (g.flux(i, j)+g.flux(i, k)))/(g2.flux(i, b))
 		epsValues.append(abs(eps))
+
 	return np.array(epsValues)
 
-def rev_epsilon(i):
+def rev_epsilon(i, tilde = False):
 	'''Using abs!!!'''
 	epsValues = []
 	for n in neighbours(i):
@@ -106,19 +125,41 @@ def rev_epsilon(i):
 		epsValues.append(abs(eps))
 	return np.array(epsValues)
 
-def neighbours_dist_plot():
+def neighbours_dist_plot(tilde = False):
 	for i in range(p.size):
-		plt.plot(neighbours_dist(i)*np.sqrt(N), epsilon(i), '.')
+		plt.plot(neighbours_dist(i)*np.sqrt(N), epsilon(i, tilde), '.')
 	plt.xlabel('$\~r_{jk}$')
 	plt.ylabel('$\epsilon$')
 	plt.show()
 
-def target_dist_plot():
+def target_dist_plot(tilde = False):
 	for i in range(p.size):
-		plt.plot(target_dist(i)*np.sqrt(N), epsilon(i), '.')
+		plt.plot(target_dist(i)*np.sqrt(N), epsilon(i, tilde), '.')
 	plt.xlabel('$\~r_{ib}$')
 	plt.ylabel('$\epsilon$')
 	plt.show()
+
+def countour():
+	x = []
+	y = []
+	z = []
+	for i in range(p.size):
+		x.append(target_dist(i))
+		y.append(neighbours_dist(i))
+		z.append(epsilon(i))
+	x = np.array(x)
+	y = np.array(y)
+	z = np.array(z)
+	xi = np.linspace(0,2.1, len(z))
+	yi = np.linspace(0,2.1, len(z))
+	# grid the data.
+	zi = griddata((x, y), z, (xi[None,:], yi[:,None]), method='cubic')
+
+	CS = plt.contour(xi,yi,zi,15,linewidths=0.5,colors='k')
+	CS = plt.contourf(xi,yi,zi,15,cmap=plt.cm.jet)
+	plt.colorbar() # draw colorbar
+	# plot data points.
+	plt.scatter(x,y,marker='o',c='b',s=5)
 
 '''def heatmap(i):
 	x = target_dist(i)
