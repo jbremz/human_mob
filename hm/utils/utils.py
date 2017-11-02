@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def disp(loci, locj):
 	'''
 	Takes the coordinates of locations i and j and returns the euclidean distance between them
@@ -13,7 +14,7 @@ def plot_pop(population, **kwargs):
 	'''
 	Takes a population object and plots the locations
 
-	TODO: area proportional to population? 
+	TODO: area proportional to population?
 
 	'''
 
