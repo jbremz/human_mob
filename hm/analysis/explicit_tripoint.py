@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import copy
 
-def epsilon(x,y,N, size=1., ib=True, seed=False, tildeM=False):
+def epsilon(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=2):
 	'''
 	Takes the x and y displacements defined in the tripoint problem and returns
 	the error between treating the satellite locations as one and as separate
@@ -19,8 +19,6 @@ def epsilon(x,y,N, size=1., ib=True, seed=False, tildeM=False):
 	seed = int --> recreate a previous population distribution
 
 	'''
-	gamma = 2 # TODO try other exponents and other functions?
-
 	if type(seed) is bool:
 		p = pop_random(N)
 
@@ -43,7 +41,7 @@ def epsilon(x,y,N, size=1., ib=True, seed=False, tildeM=False):
 	# Use definition of m_b with correction for the intra-location flow
 	# TODO: not sure about the motivation behind this definition + change to non-uniform size
 	if tildeM:
-		sizeb = 2*size - g3.flux(1,2) - g3.flux(2,1)
+		sizeb = 2*size - size*(g3.flux(1,2) - g3.flux(2,1))
 	# use traditional definition of population mass m_b
 	else:
 		sizeb = 2*size 
@@ -65,7 +63,7 @@ def epsilon(x,y,N, size=1., ib=True, seed=False, tildeM=False):
 
 
 
-def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True):
+def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True, heatmap=True, tildeM=False):
 	'''
 	Finds values of epsilon in an nxn 2D sample space for x and y at fixed N random locations and plots a heatmap
 	ib is a boolean to consider the direction of flow (see docstring for epsilon)
@@ -84,7 +82,7 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True):
 
 	for j, row in enumerate(xy): # fill sample space
 		for i, pair in enumerate(row):
-			epsVals[j][i] = abs(epsilon(pair[0], pair[1], N, ib=ib, seed=seed, tildeM=False))
+			epsVals[j][i] = abs(epsilon(pair[0], pair[1], N, ib=ib, seed=seed, tildeM=tildeM))
 
 	nanMask = np.isnan(epsVals)
 
@@ -93,16 +91,27 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True):
 	epsVals = np.flip(epsVals, 0) # make the y axis ascend
 
 	xticks = np.around(x*np.sqrt(N), 2)
-	yticks = np.flip(np.around(y*np.sqrt(N), 2), 0)
+	yticks = np.flip(np.around(y*np.sqrt(N), 2), 0) # make the y axis ascend
 
-	# Plot heatmap for eps with x-y
-	ax = sns.heatmap(epsVals, xticklabels=xticks, yticklabels=yticks, square=True) # TODO contour plot
+	if heatmap is True: # Plot heatmap for eps with x-y
+		ax = sns.heatmap(epsVals, xticklabels=xticks, yticklabels=yticks, square=True)
 
-	plt.rc('text', usetex=True)
-	plt.rc('font', family='serif')
+		plt.rc('text', usetex=True)
+		plt.rc('font', family='serif')
 
-	ax.set_xlabel(r'$x \sqrt{N}$')
-	ax.set_ylabel(r'$y \sqrt{N}$')
+		ax.set_xlabel(r'$x \sqrt{N}$')
+		ax.set_ylabel(r'$y \sqrt{N}$')
+
+	else: # Plot contour
+		plt.figure()
+		ax = plt.contour(x*np.sqrt(N), np.flip(y*np.sqrt(N), 0), epsVals)
+		plt.clabel(ax, inline=1, fontsize=10)
+
+		plt.rc('text', usetex=True)
+		# plt.rc('font', family='serif')
+
+		plt.xlabel(r'$x \sqrt{N}$')
+		plt.ylabel(r'$y \sqrt{N}$')
 
 	# Plot location distribution
 	# plt.figure()
