@@ -16,7 +16,6 @@ def plot_pop(population, **kwargs):
 	TODO: area proportional to population? 
 
 	'''
-
 	coords = population.locCoords
 	plt.scatter(coords[:,0], coords[:,1], s=4)
 	plt.show()
