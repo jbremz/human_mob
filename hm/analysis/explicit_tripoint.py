@@ -211,7 +211,7 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, model='gravity', ib=True, heatmap=True, 
 
 	return
 
-def epsChangeY(ymin, ymax, x, n, N, ib=True):
+def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=True):
 	'''
 	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations
 
@@ -222,8 +222,15 @@ def epsChangeY(ymin, ymax, x, n, N, ib=True):
 
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
+	if model=='gravity':
+		func = epsilon_g
+	if model=='radiation':
+		func = epsilon_r
+	if model=='opportunities':
+		func = epsilon_io
+
 	for val in y:
-		epsVals.append(abs(epsilon(x, val, N, ib=ib, seed=seed)))
+		epsVals.append(abs(func(x, val, N, ib=ib, seed=seed)))
 
 	yEps = np.array([y * np.sqrt(N), np.array(epsVals)]).T
 
