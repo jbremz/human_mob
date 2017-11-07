@@ -1,5 +1,7 @@
 from hm.hm_models.gravity import gravity
 from hm.pop_models.pop_random import random as pop_random
+from hm.hm_models.radiation import radiation
+from hm.hm_models.opportunities import opportunities
 import numpy as np
 import seaborn as sns; sns.set()
 import matplotlib.pyplot as plt
@@ -7,16 +9,10 @@ import copy
 from hm.utils.utils import disp
 from scipy.interpolate import griddata
 from itertools import combinations
+from scipy import stats
 
 
-
-N = 4
-alpha, beta = 1, 1
-gamma = 2.
-p = pop_random(N)
-g = gravity(p, alpha, beta, gamma)
-
-def neighb(i):
+def neighb(p, i):
 	'''Returns a list of the nearest neighobours of a given location as a Numpy array.'''
 
 	neighbours = []
@@ -31,7 +27,7 @@ def neighb(i):
 
 	return np.array(neighbours)
 
-def neighbours(k):
+def neighbours(p, k):
 	'''
 	Returns a list of all nearest neighbours pairs - excluding the target location -
 	as a Numpy array,
@@ -40,32 +36,24 @@ def neighbours(k):
 	neighbours = []
 	for i in range(p.size):
 		if i != k:
-			if k not in neighb(i):
-				neighbours.append(neighb(i)[0])
-
-
-	#for i in range(len(neighbours)):
-	#	for j in range(len(neighbours)):
-	#		if i != j:
-	#			print(i, j)
-	#			if set(neighbours[i]) == set(neighbours[j]):
-	#				neighbours.remove(neighbours[i])
+			if k not in neighb(p, i):
+				neighbours.append(neighb(p, i)[0])
 
 	return np.array(neighbours)
 
-def neighbours_dist(k):
+def neighbours_dist(p, k):
 	'''
 	Returns the (scaled) distance between two nearest neighbours as a Numpy array.
 	The pair's index matches that of neighbours().
 	'''
 
 	distance = []
-	for i in neighbours(k):
+	for i in neighbours(p, k):
 		distance.append((p.r(i[0], i[1])))
 
 	return np.array(distance)
 
-def target_dist(i):
+def target_dist(p, i):
 	'''
 	Returns the (scaled) distance between the midpoint between two nearest neighbours and the
 	target location i as a Numpy array.
@@ -73,16 +61,16 @@ def target_dist(i):
 	'''
 
 	r = []
-	for n in neighbours(i):
+	for n in neighbours(p, i):
 		x = (p.locCoords[n[0]][0]+ p.locCoords[n[1]][0])*0.5
 		y = (p.locCoords[n[0]][1]+ p.locCoords[n[1]][1])*0.5
 		r.append((disp(p.locCoords[i], np.array([x, y]))))
 	return np.array(r)
 
-def epsilon(i, tilde = False):
+def epsilon(p, i, model, tilde = False):
 	'''Using abs!!!'''
 	epsValues = []
-	for n in neighbours(i):
+	for n in neighbours(p, i):
 		j, k = n[0], n[1]
 		p2 = copy.deepcopy(p)
 
@@ -91,23 +79,37 @@ def epsilon(i, tilde = False):
 		p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
 		p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
 
-		if tilde == True:
-			p2.popDist[j] = p2.popDist[k] + p2.popDist[j] - p2.popDist[j]*g.flux(j, k) - p2.popDist[k]*g.flux(j, k)
-		else:
-			p2.popDist[j] = p2.popDist[k] + p2.popDist[j] #merge two populations
+		#if tilde == True:
+		#	p2.popDist[j] = p2.popDist[k] + p2.popDist[j] - p2.popDist[j]*g.flux(j, k) - p2.popDist[k]*g.flux(j, k)
+		p2.popDist[j] = p2.popDist[k] + p2.popDist[j] #merge two populations
 
 		p2.popDist[k] = 0. #remove k
 		b = j #rename j
-		g2 = gravity(p2, alpha, beta, gamma)
-		eps = (g2.flux(i, b) - (g.flux(i, j)+g.flux(i, k)))/(g2.flux(i, b))
+
+		if isinstance(model, gravity):
+			alpha = model.alpha
+			beta = model.beta
+			gamma = model.gamma
+
+			g2 = gravity(p2, alpha, beta, gamma)
+			eps = (g2.flux(i, b) - (model.flux(i, j)+model.flux(i, k)))/(g2.flux(i, b))
+
+		if isinstance(model, radiation):
+			r2 = radiation(p2)
+			eps = (r2.flux(i, b) - (model.flux(i, j)+model.flux(i, k)))/(r2.flux(i, b))
+
+		if isinstance(model, opportunities):
+			gamma = model.gamma
+			o2 = opportunities(p2, gamma)
+			eps = (o2.flux(i, b) - (model.flux(i, j)+model.flux(i, k)))/(o2.flux(i, b))
 		epsValues.append(abs(eps))
 
 	return np.array(epsValues)
 
-def rev_epsilon(i, tilde = False):
+def rev_epsilon(p, g, i, tilde = False):
 	'''Using abs!!!'''
 	epsValues = []
-	for n in neighbours(i):
+	for n in neighbours(p, i):
 		j, k = n[0], n[1]
 		p2 = copy.deepcopy(p)
 
@@ -125,22 +127,38 @@ def rev_epsilon(i, tilde = False):
 		epsValues.append(abs(eps))
 	return np.array(epsValues)
 
-def neighbours_dist_plot(tilde = False):
+def neighbours_dist_plot(p, model, tilde = False):
+	y = []
+	x = []
 	for i in range(p.size):
-		plt.plot(neighbours_dist(i)*np.sqrt(N), epsilon(i, tilde), '.')
+		y.append(epsilon(p, i, model, tilde))
+		x.append(neighbours_dist(p, i))
+	x = np.concatenate(x)
+	y = np.concatenate(y)
+	#plt.plot(x*np.sqrt(p.size), y, '.')
+	plt.plot(x*np.sqrt(p.size), np.arctan(x*np.sqrt(p.size)/(2*np.pi)), label = 'simulation')
+	regress = stats.linregress(x*np.sqrt(p.size), y)
+	plt.plot(x*np.sqrt(p.size), x*np.sqrt(p.size)*regress[0] + regress[1], label = 'theory')
 	plt.xlabel('$\~r_{jk}$')
 	plt.ylabel('$\epsilon$')
+	plt.legend()
 	plt.show()
 
-def target_dist_plot(tilde = False):
+def target_dist_plot(p, model, tilde = False):
+	y = []
+	x = []
 	for i in range(p.size):
-		plt.plot(target_dist(i)*np.sqrt(N), epsilon(i, tilde), '.')
+		y.append(epsilon(p, i, model, tilde))
+		x.append(target_dist(p, i))
+	x = np.concatenate(x)
+	y = np.concatenate(y)
+	plt.plot(x*np.sqrt(p.size), y, '.')
 	plt.xlabel('$\~r_{ib}$')
 	plt.ylabel('$\epsilon$')
 	plt.show()
 
-def countour():
-	x = []
+def contour():
+	'''x = []
 	y = []
 	z = []
 	for i in range(p.size):
@@ -149,26 +167,17 @@ def countour():
 		z.append(epsilon(i))
 	x = np.array(x)
 	y = np.array(y)
-	z = np.array(z)
-	xi = np.linspace(0,2.1, len(z))
-	yi = np.linspace(0,2.1, len(z))
+	z = np.array(z)'''
+	xi = np.linspace(0,1., 30)
+	yi = np.linspace(0,1., 30)
 	# grid the data.
-	zi = griddata((x, y), z, (xi[None,:], yi[:,None]), method='cubic')
+	#zi = griddata((x, y), z, (xi[None,:], yi[:,None]), method='cubic')
+	X, Y = np.meshgrid(xi, yi)
+
+	zi = 1 - (np.arctan(Y/X)/(2*np.pi))
 
 	CS = plt.contour(xi,yi,zi,15,linewidths=0.5,colors='k')
 	CS = plt.contourf(xi,yi,zi,15,cmap=plt.cm.jet)
 	plt.colorbar() # draw colorbar
 	# plot data points.
-	plt.scatter(x,y,marker='o',c='b',s=5)
-
-'''def heatmap(i):
-	x = target_dist(i)
-	y = neighbours_dist(i)
-	epsVals = epsilon(i)
-	xy = np.column_stack((x, y))
-
-	f = interpolate.griddata(xy, epsVals, (np.linspace(0,1, 0.1), np.linspace(0, 1, 0.1)), method = 'nearest')
-
-	ax = sns.heatmap(epsVals)
-	plt.show()
-	return x, y'''
+	#plt.scatter(x,y,marker='o',c='b',s=5)
