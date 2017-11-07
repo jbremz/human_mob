@@ -1,6 +1,7 @@
 from hm.pop_models.pop_random import random as pop_random
 from hm.hm_models.gravity import gravity
 from hm.hm_models.radiation import radiation
+from hm.hm_models.opportunities import opportunities
 from hm.utils.utils import plot_pop
 import numpy as np
 import seaborn as sns; sns.set()
@@ -118,7 +119,34 @@ def epsilon_r(x,y,N, size=1., ib=True, seed=False, tildeM=False):
 	return eps
 
 
-def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True, heatmap=True, tildeM=False, func=gravity):
+def epsilon_io(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=1.):
+	'''
+	Epsilon for intervening opportunities model
+
+	'''
+	p2, p3, loci, locb = createPops(x,y,N,size,seed)
+
+	io3 = opportunities(p3, gamma)
+
+	# Use definition of m_b with correction for the intra-location flow
+	if tildeM:
+		sizeb = tilde_m(size, io3)
+	# use traditional definition of population mass m_b
+	else:
+		sizeb = 2*size 
+
+	# Insert locations into two-point
+	p2.popDist = np.insert(p2.popDist, 0, np.array([size, sizeb]), axis=0)
+	p2.locCoords = np.insert(p2.locCoords, 0, np.array([loci, locb]), axis=0)
+
+	io2 = opportunities(p2, gamma)
+
+	eps = epsilon(io2, io3, ib=ib)
+
+	return eps
+
+
+def anaTP(xmin, xmax, ymin, ymax, n, N, model='gravity', ib=True, heatmap=True, tildeM=False, func=gravity):
 	'''
 	Finds values of epsilon in an nxn 2D sample space for x and y at fixed N random locations and plots a heatmap
 	ib is a boolean to consider the direction of flow (see docstring for epsilon)
@@ -135,9 +163,16 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, ib=True, heatmap=True, tildeM=False, fun
 
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
+	if model=='gravity':
+		func = epsilon_g
+	if model=='radiation':
+		func = epsilon_r
+	if model=='opportunities':
+		func = epsilon_io
+
 	for j, row in enumerate(xy): # fill sample space
 		for i, pair in enumerate(row):
-			epsVals[j][i] = abs(epsilon_r(pair[0], pair[1], N, ib=ib, seed=seed, tildeM=tildeM))
+			epsVals[j][i] = abs(func(pair[0], pair[1], N, ib=ib, seed=seed, tildeM=tildeM))
 
 	nanMask = np.isnan(epsVals)
 
