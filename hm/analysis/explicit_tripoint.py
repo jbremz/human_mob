@@ -72,7 +72,7 @@ def epsilon_g(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=2):
 	'''
 	p2, p3, loci, locb = createPops(x,y,N,size,seed)
 
-	g3 = gravity(p3, alpha=1, beta=1, gamma=gamma)
+	g3 = gravity(p3, alpha=1, beta=1, gamma=gamma, exp=False)
 
 	# Use definition of m_b with correction for the intra-location flow
 	if tildeM:
@@ -85,7 +85,7 @@ def epsilon_g(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=2):
 	p2.popDist = np.insert(p2.popDist, 0, np.array([size, sizeb]), axis=0)
 	p2.locCoords = np.insert(p2.locCoords, 0, np.array([loci, locb]), axis=0)
 
-	g2 = gravity(p2, 1, 1, gamma)
+	g2 = gravity(p2, 1, 1, gamma, exp=False)
 
 	eps = epsilon(g2, g3, ib=ib)
 
@@ -142,6 +142,18 @@ def epsilon_io(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=1.):
 	io2 = opportunities(p2, gamma)
 
 	eps = epsilon(io2, io3, ib=ib)
+
+	return eps
+
+def anlyt_epsilon(x,y, tilde_m=False):
+	'''	
+	Returns the analytical result for epsilon
+
+	TODO: include tilde m correction
+	TODO: include the population mass prefactor
+
+	'''
+	eps = np.arctan(y/(2*x))/(np.pi)
 
 	return eps
 
@@ -211,7 +223,7 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, model='gravity', ib=True, heatmap=True, 
 
 	return
 
-def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=True):
+def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False):
 	'''
 	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations
 
@@ -233,13 +245,61 @@ def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=True):
 		epsVals.append(abs(func(x, val, N, ib=ib, seed=seed)))
 
 	yEps = np.array([y * np.sqrt(N), np.array(epsVals)]).T
+	anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon(x, y)]).T
 
-	ax = sns.regplot(yEps[:,0], yEps[:,1], scatter_kws={'s':10}, fit_reg=False)
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.scatter(yEps[:,0], yEps[:,1], s=10, label='Simulation')
+	ax.scatter(anlytYEps[:,0], anlytYEps[:,1], s=10, label='Analytical Result')
+
+	ax.legend()
 
 	plt.rc('text', usetex=True)
-	plt.rc('font', family='serif')
 
 	ax.set_xlabel(r'$y \sqrt{N}$')
+	ax.set_ylabel(r'$\epsilon$')
+
+	plt.show()
+
+	return
+
+
+def epsChangeX(xmin, xmax, y, n, N, model='gravity', ib=False):
+	'''
+	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations
+
+	'''
+	x = np.linspace(xmin, xmax, n)
+
+	epsVals = []
+
+	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+
+	if model=='gravity':
+		func = epsilon_g
+	if model=='radiation':
+		func = epsilon_r
+	if model=='opportunities':
+		func = epsilon_io
+
+	for val in x:
+		epsVals.append(abs(func(val, y, N, ib=ib, seed=seed)))
+
+	yEps = np.array([x * np.sqrt(N), np.array(epsVals)]).T
+	anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon(x, y)]).T
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.scatter(yEps[:,0], yEps[:,1], s=10, label='Simulation')
+	ax.scatter(anlytXEps[:,0], anlytXEps[:,1], s=10, label='Analytical Result')
+
+	ax.legend()
+
+	plt.rc('text', usetex=True)
+
+	ax.set_xlabel(r'$x \sqrt{N}$')
 	ax.set_ylabel(r'$\epsilon$')
 
 	plt.show()
