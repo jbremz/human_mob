@@ -135,13 +135,14 @@ def neighbours_dist_plot(p, model, tilde = False):
 		x.append(neighbours_dist(p, i))
 	x = np.concatenate(x)
 	y = np.concatenate(y)
-	#plt.plot(x*np.sqrt(p.size), y, '.')
-	plt.plot(x*np.sqrt(p.size), np.arctan(x*np.sqrt(p.size)/(2*np.pi)), label = 'simulation')
-	regress = stats.linregress(x*np.sqrt(p.size), y)
-	plt.plot(x*np.sqrt(p.size), x*np.sqrt(p.size)*regress[0] + regress[1], label = 'theory')
+	plt.plot(x*np.sqrt(p.size), y, '.')
+	if isinstance(model, gravity):
+		plt.plot(x*np.sqrt(p.size), np.arctan(x)/(np.pi), label = 'simulation')
+		regress = stats.linregress(x*np.sqrt(p.size), y)
+		plt.plot(x*np.sqrt(p.size), x*np.sqrt(p.size)*regress[0] + regress[1], label = 'theory')
+		plt.legend()
 	plt.xlabel('$\~r_{jk}$')
 	plt.ylabel('$\epsilon$')
-	plt.legend()
 	plt.show()
 
 def target_dist_plot(p, model, tilde = False):
