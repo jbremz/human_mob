@@ -22,10 +22,11 @@ def createPops(x,y,N,size,seed):
 	else: # use seed for random population distribution so that it can be replicated
 		p = pop_random(N, seed=seed)
 
-	loci = [0.5+x/2., 0.5]
-	locj = [0.5-x/2., 0.5-y/2.]
-	lock = [0.5-x/2., 0.5+y/2.]
-	locb = [0.5-x/2., 0.5]
+	# Changed these locations so that j an k remain at constant x - less variation in population distribution
+	loci = [0.5+x, 0.5]
+	locj = [0.5, 0.5-y/2.]
+	lock = [0.5, 0.5+y/2.]
+	locb = [0.5, 0.5]
 
 	p3 = copy.deepcopy(p) # the tripoint arrangement
 	p2 = copy.deepcopy(p) # the two-point arrangement
@@ -162,7 +163,7 @@ def anlyt_epsilon(x,y, tilde_m=False):
 
 # ------------------ ANALYSIS FUNCTIONS ------------------
 
-def gridEpsilon(xy, N, ib, tildeM, func):
+def gridEpsilon(xy, N, ib, tildeM, func, runs):
 	'''
 	Returns array of filled with epsilon values for the given x and y values and epsilon function
 
@@ -179,7 +180,7 @@ def gridEpsilon(xy, N, ib, tildeM, func):
 
 	epsVals[nanMask] = 0 # TODO - this could cause interpretation issues
 
-	return epsVals
+	return epsVals, seed
 
 def anaTP(xmin, xmax, ymin, ymax, n, N, runs=1, model='gravity', ib=True, heatmap=True, tildeM=False):
 	'''
@@ -202,7 +203,7 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, runs=1, model='gravity', ib=True, heatma
 	if model=='opportunities':
 		func = epsilon_io
 
-	epsVals = gridEpsilon(xy, N, ib, tildeM, func) # returns the epsilon values in the grid
+	epsVals, seed = gridEpsilon(xy, N, ib, tildeM, func, runs=runs) # returns the epsilon values in the grid
 
 	for i in np.arange(runs-1):
 		epsVals = np.concatenate((epsVals,gridEpsilon(xy, N, ib, tildeM, func)), axis=2) 
@@ -223,8 +224,8 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, runs=1, model='gravity', ib=True, heatma
 		plt.rc('text', usetex=True)
 		plt.rc('font', family='serif')
 
-		ax.set_xlabel(r'$x \sqrt{N}$')
-		ax.set_ylabel(r'$y \sqrt{N}$')
+		ax.set_xlabel(r'$r_{ib} \sqrt{N}$')
+		ax.set_ylabel(r'$r_{jk} \sqrt{N}$')
 
 	else: # Plot contour
 		plt.figure()
@@ -234,18 +235,40 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, runs=1, model='gravity', ib=True, heatma
 		plt.rc('text', usetex=True)
 		# plt.rc('font', family='serif')
 
-		plt.xlabel(r'$x \sqrt{N}$')
-		plt.ylabel(r'$y \sqrt{N}$')
+		plt.xlabel(r'$r_{ib} \sqrt{N}$')
+		plt.ylabel(r'$r_{jk} \sqrt{N}$')
 
-	plt.title(model.title() + ' model - ' + str(N) + ' locations, ' + str(runs) + ' runs')
+	plt.title(model.title() + ' model ' + r'$\epsilon(r_{ib},r_{jk})$' + ' - ' + str(N) + ' locations, ' + str(runs) + ' run(s)')
 
-	# Plot location distribution
-	# plt.figure()
-	# plot_pop(pop_random(N, seed=seed))
+	if runs == 1:
+		plotLocs(N, seed, xmin, xmax, ymin, ymax, show=False)
 
 	plt.show()
 
 	# return sigmaEps
+
+	return
+
+def plotLocs(N, seed, xmin, xmax, ymin, ymax, show=True):
+	'''
+	Plots the spatial population distribution and superimposed lines showing the variation in x and y
+
+	'''
+
+	plt.figure()
+
+	# Plot all the locations
+	plot_pop(pop_random(N, seed=seed), show=False)
+
+	# Plot the changes in r_ib and r_jk
+	plt.plot([0.5 + xmin, 0.5 + xmax],[0.5, 0.5], 'orange', lw=1, label='i')
+	plt.plot([0.5, 0.5],[0.5-0.5*ymax, 0.5-0.5*ymin], 'violet', lw=1, label='j')
+	plt.plot([0.5, 0.5],[0.5+0.5*ymax, 0.5+0.5*ymin], 'mediumseagreen', lw=1, label='k')
+
+	plt.legend(loc='upper right', shadow=True)
+
+	if show:
+		plt.show()
 
 	return
 
