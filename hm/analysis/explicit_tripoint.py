@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import copy
 
+# ------------------ ERROR FUNCTIONS ------------------
+
 def createPops(x,y,N,size,seed):
 	'''
 	Returns the tripoint and two-point population objects as well as location of i and location of b
@@ -158,7 +160,28 @@ def anlyt_epsilon(x,y, tilde_m=False):
 	return eps
 
 
-def anaTP(xmin, xmax, ymin, ymax, n, N, model='gravity', ib=True, heatmap=True, tildeM=False, func=gravity):
+# ------------------ ANALYSIS FUNCTIONS ------------------
+
+def gridEpsilon(xy, N, ib, tildeM, func):
+	'''
+	Returns array of filled with epsilon values for the given x and y values and epsilon function
+
+	'''
+	epsVals = np.zeros((len(xy),len(xy), 1)) # create empty array for epsilon
+
+	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distributions are the same
+
+	for j, row in enumerate(xy): # fill sample space
+		for i, pair in enumerate(row):
+			epsVals[j][i][0] = abs(func(pair[0], pair[1], N, ib=ib, seed=seed, tildeM=tildeM)) # TODO - not very efficient, would be better just to keep the distribution and change the single points
+
+	nanMask = np.isnan(epsVals)
+
+	epsVals[nanMask] = 0 # TODO - this could cause interpretation issues
+
+	return epsVals
+
+def anaTP(xmin, xmax, ymin, ymax, n, N, runs=1, model='gravity', ib=True, heatmap=True, tildeM=False):
 	'''
 	Finds values of epsilon in an nxn 2D sample space for x and y at fixed N random locations and plots a heatmap
 	ib is a boolean to consider the direction of flow (see docstring for epsilon)
@@ -171,10 +194,7 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, model='gravity', ib=True, heatmap=True, 
 	xy = np.array(np.meshgrid(x, y)).T # 2D Sample Space
 	xy = np.swapaxes(xy,0,1)
 
-	epsVals = np.zeros((n,n))
-
-	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
-
+	# Choose the correct epsilon function
 	if model=='gravity':
 		func = epsilon_g
 	if model=='radiation':
@@ -182,21 +202,23 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, model='gravity', ib=True, heatmap=True, 
 	if model=='opportunities':
 		func = epsilon_io
 
-	for j, row in enumerate(xy): # fill sample space
-		for i, pair in enumerate(row):
-			epsVals[j][i] = abs(func(pair[0], pair[1], N, ib=ib, seed=seed, tildeM=tildeM))
+	epsVals = gridEpsilon(xy, N, ib, tildeM, func) # returns the epsilon values in the grid
 
-	nanMask = np.isnan(epsVals)
+	for i in np.arange(runs-1):
+		epsVals = np.concatenate((epsVals,gridEpsilon(xy, N, ib, tildeM, func)), axis=2) 
 
-	epsVals[nanMask] = 1
+	meanEps = np.mean(epsVals, axis=2)
+	sigmaEps = np.std(epsVals, axis=2)/np.sqrt(runs) # TODO - is this the right treatment of error?
 
-	epsVals = np.flip(epsVals, 0) # make the y axis ascend
+	# Plotting
+
+	meanEps = np.flip(meanEps, 0) # make the y axis ascend
 
 	xticks = np.around(x*np.sqrt(N), 2)
 	yticks = np.flip(np.around(y*np.sqrt(N), 2), 0) # make the y axis ascend
 
 	if heatmap is True: # Plot heatmap for eps with x-y
-		ax = sns.heatmap(epsVals, xticklabels=xticks, yticklabels=yticks, square=True)
+		ax = sns.heatmap(meanEps, xticklabels=xticks, yticklabels=yticks, square=True)
 
 		plt.rc('text', usetex=True)
 		plt.rc('font', family='serif')
@@ -206,7 +228,7 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, model='gravity', ib=True, heatmap=True, 
 
 	else: # Plot contour
 		plt.figure()
-		ax = plt.contour(x*np.sqrt(N), np.flip(y*np.sqrt(N), 0), epsVals)
+		ax = plt.contour(x*np.sqrt(N), np.flip(y*np.sqrt(N), 0), meanEps)
 		plt.clabel(ax, inline=1, fontsize=10)
 
 		plt.rc('text', usetex=True)
@@ -215,11 +237,15 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, model='gravity', ib=True, heatmap=True, 
 		plt.xlabel(r'$x \sqrt{N}$')
 		plt.ylabel(r'$y \sqrt{N}$')
 
+	plt.title(model.title() + ' model - ' + str(N) + ' locations, ' + str(runs) + ' runs')
+
 	# Plot location distribution
 	# plt.figure()
 	# plot_pop(pop_random(N, seed=seed))
 
 	plt.show()
+
+	# return sigmaEps
 
 	return
 
@@ -267,7 +293,7 @@ def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False):
 
 def epsChangeX(xmin, xmax, y, n, N, model='gravity', ib=False):
 	'''
-	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations
+	Fixes y and varies x across n values between ymin and ymax for a random distribution of N locations
 
 	'''
 	x = np.linspace(xmin, xmax, n)
