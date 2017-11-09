@@ -148,7 +148,7 @@ def epsilon_io(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=1.):
 
 	return eps
 
-def anlyt_epsilon(x,y, tilde_m=False):
+def anlyt_epsilon(r_ib,r_jk,gamma, tilde_m=False):
 	'''	
 	Returns the analytical result for epsilon
 
@@ -156,14 +156,14 @@ def anlyt_epsilon(x,y, tilde_m=False):
 	TODO: include the population mass prefactor
 
 	'''
-	eps = np.arctan(y/(2*x))/(np.pi)
+	eps = 1-(1-np.arctan(r_jk/(2*r_ib))/(np.pi))*np.exp(gamma*(r_ib-np.sqrt(r_ib**2 + (r_jk/2)**2)))
 
 	return eps
 
 
 # ------------------ ANALYSIS FUNCTIONS ------------------
 
-def gridEpsilon(xy, N, ib, tildeM, func, runs):
+def gridEpsilon(xy, N, ib, tildeM, func):
 	'''
 	Returns array of filled with epsilon values for the given x and y values and epsilon function
 
@@ -203,10 +203,10 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, runs=1, model='gravity', ib=True, heatma
 	if model=='opportunities':
 		func = epsilon_io
 
-	epsVals, seed = gridEpsilon(xy, N, ib, tildeM, func, runs=runs) # returns the epsilon values in the grid
+	epsVals, seed = gridEpsilon(xy, N, ib, tildeM, func) # returns the epsilon values in the grid
 
 	for i in np.arange(runs-1):
-		epsVals = np.concatenate((epsVals,gridEpsilon(xy, N, ib, tildeM, func)), axis=2) 
+		epsVals = np.concatenate((epsVals,gridEpsilon(xy, N, ib, tildeM, func)[0]), axis=2) 
 
 	meanEps = np.mean(epsVals, axis=2)
 	sigmaEps = np.std(epsVals, axis=2)/np.sqrt(runs) # TODO - is this the right treatment of error?
@@ -222,10 +222,20 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, runs=1, model='gravity', ib=True, heatma
 		ax = sns.heatmap(meanEps, xticklabels=xticks, yticklabels=yticks, square=True)
 
 		plt.rc('text', usetex=True)
-		plt.rc('font', family='serif')
+		# plt.rc('font', family='serif')
 
 		ax.set_xlabel(r'$r_{ib} \sqrt{N}$')
 		ax.set_ylabel(r'$r_{jk} \sqrt{N}$')
+
+		ax.set_title(model.title() + ' model ' + r'$\epsilon(r_{ib},r_{jk})$' + ' - ' + str(N) + ' locations, ' + str(runs) + ' run(s)')
+
+		if runs > 1: # sigma epsilon plot
+			plt.figure()
+			ax2 = sns.heatmap(sigmaEps, xticklabels=xticks, yticklabels=yticks, square=True)
+
+			ax2.set_xlabel(r'$r_{ib} \sqrt{N}$')
+			ax2.set_ylabel(r'$r_{jk} \sqrt{N}$')
+			ax2.set_title(model.title() + ' model ' + r'$\sigma_{\epsilon}(r_{ib},r_{jk})$' + ' - ' + str(N) + ' locations, ' + str(runs) + ' run(s)')
 
 	else: # Plot contour
 		plt.figure()
@@ -238,7 +248,17 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, runs=1, model='gravity', ib=True, heatma
 		plt.xlabel(r'$r_{ib} \sqrt{N}$')
 		plt.ylabel(r'$r_{jk} \sqrt{N}$')
 
-	plt.title(model.title() + ' model ' + r'$\epsilon(r_{ib},r_{jk})$' + ' - ' + str(N) + ' locations, ' + str(runs) + ' run(s)')
+		plt.title(model.title() + ' model ' + r'$\epsilon(r_{ib},r_{jk})$' + ' - ' + str(N) + ' locations, ' + str(runs) + ' run(s)')
+
+		if runs > 1: # sigma epsilon plot
+			plt.figure()
+			ax2 = plt.contour(x*np.sqrt(N), np.flip(y*np.sqrt(N), 0), sigmaEps)
+			plt.clabel(ax2, inline=1, fontsize=10)
+
+			plt.xlabel(r'$r_{ib} \sqrt{N}$')
+			plt.ylabel(r'$r_{jk} \sqrt{N}$')
+
+			plt.title(model.title() + ' model ' + r'$\sigma_{\epsilon}(r_{ib},r_{jk})$' + ' - ' + str(N) + ' locations, ' + str(runs) + ' run(s)')
 
 	if runs == 1:
 		plotLocs(N, seed, xmin, xmax, ymin, ymax, show=False)
@@ -272,7 +292,7 @@ def plotLocs(N, seed, xmin, xmax, ymin, ymax, show=True):
 
 	return
 
-def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False):
+def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False, analytical=False, gamma=2):
 	'''
 	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations
 
@@ -294,19 +314,21 @@ def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False):
 		epsVals.append(abs(func(x, val, N, ib=ib, seed=seed)))
 
 	yEps = np.array([y * np.sqrt(N), np.array(epsVals)]).T
-	anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon(x, y)]).T
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
 	ax.scatter(yEps[:,0], yEps[:,1], s=10, label='Simulation')
-	ax.scatter(anlytYEps[:,0], anlytYEps[:,1], s=10, label='Analytical Result')
+
+	if analytical:
+		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma)]).T
+		ax.scatter(anlytYEps[:,0], anlytYEps[:,1], s=10, label='Analytical Result')
 
 	ax.legend()
 
 	plt.rc('text', usetex=True)
 
-	ax.set_xlabel(r'$y \sqrt{N}$')
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$')
 	ax.set_ylabel(r'$\epsilon$')
 
 	plt.show()
@@ -314,7 +336,7 @@ def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False):
 	return
 
 
-def epsChangeX(xmin, xmax, y, n, N, model='gravity', ib=False):
+def epsChangeX(xmin, xmax, y, n, N, model='gravity', ib=False, analytical=False, gamma=2):
 	'''
 	Fixes y and varies x across n values between ymin and ymax for a random distribution of N locations
 
@@ -336,19 +358,21 @@ def epsChangeX(xmin, xmax, y, n, N, model='gravity', ib=False):
 		epsVals.append(abs(func(val, y, N, ib=ib, seed=seed)))
 
 	yEps = np.array([x * np.sqrt(N), np.array(epsVals)]).T
-	anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon(x, y)]).T
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
 	ax.scatter(yEps[:,0], yEps[:,1], s=10, label='Simulation')
-	ax.scatter(anlytXEps[:,0], anlytXEps[:,1], s=10, label='Analytical Result')
+
+	if analytical:
+		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma)]).T
+		ax.scatter(anlytXEps[:,0], anlytXEps[:,1], s=10, label='Analytical Result')
 
 	ax.legend()
 
 	plt.rc('text', usetex=True)
 
-	ax.set_xlabel(r'$x \sqrt{N}$')
+	ax.set_xlabel(r'$r_{ib} \sqrt{N}$')
 	ax.set_ylabel(r'$\epsilon$')
 
 	plt.show()
