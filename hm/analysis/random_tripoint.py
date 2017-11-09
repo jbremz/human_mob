@@ -102,7 +102,7 @@ def epsilon(p, i, model, tilde = False):
 			gamma = model.gamma
 			o2 = opportunities(p2, gamma)
 			eps = (o2.flux(i, b) - (model.flux(i, j)+model.flux(i, k)))/(o2.flux(i, b))
-		epsValues.append(abs(eps))
+		epsValues.append(eps)
 
 	return np.array(epsValues)
 
@@ -124,7 +124,7 @@ def rev_epsilon(p, g, i, tilde = False):
 
 		g2 = gravity(p2, alpha, beta, gamma)
 		eps = (g2.flux(b, i) - (g.flux(j, i)+g.flux(k, i)))/(g2.flux(b, i))
-		epsValues.append(abs(eps))
+		epsValues.append(eps)
 	return np.array(epsValues)
 
 def neighbours_dist_plot(p, model, tilde = False):
