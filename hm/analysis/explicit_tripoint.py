@@ -219,6 +219,7 @@ def anaTP(xmin, xmax, ymin, ymax, n, N, runs=1, model='gravity', ib=True, heatma
 	yticks = np.flip(np.around(y*np.sqrt(N), 2), 0) # make the y axis ascend
 
 	if heatmap is True: # Plot heatmap for eps with x-y
+		plt.figure()
 		ax = sns.heatmap(meanEps, xticklabels=xticks, yticklabels=yticks, square=True)
 
 		plt.rc('text', usetex=True)
@@ -292,15 +293,13 @@ def plotLocs(N, seed, xmin, xmax, ymin, ymax, show=True):
 
 	return
 
-def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False, analytical=False, gamma=2):
+def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False, analytical=False, gamma=20):
 	'''
 	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations
 
 	'''
 	y = np.linspace(ymin, ymax, n)
-
 	epsVals = []
-
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
 	if model=='gravity':
