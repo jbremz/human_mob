@@ -59,7 +59,6 @@ def target_dist(p, i):
 	target location i as a Numpy array.
 	The pair's index matches that of neighbours().
 	'''
-
 	r = []
 	for n in neighbours(p, i):
 		x = (p.locCoords[n[0]][0]+ p.locCoords[n[1]][0])*0.5
@@ -106,6 +105,65 @@ def epsilon(p, i, model, tilde = False):
 
 	return np.array(epsValues)
 
+def analytical_eps(p, model,r_jk, r_ib, tilde = False):
+	'''
+	Returns the analytical form of epsilon for the exponential gravity model
+	as a function of r_ib.
+	'''
+	if isinstance(model, gravity):
+		if model.exp:
+			x = eps_vs_target(p, model, tilde)[0]
+			y = eps_vs_neighbours(p, model, tilde)[0]
+			#only if m = 1 for all!
+			if r_ib == 0.:
+				eps_values = ((np.arctan((r_jk/(2*x))))/(2/np.pi))*(np.exp(model.gamma*(x - (np.sqrt(x**2 + (r_jk/2.)**2)))))
+			if r_jk == 0.:
+				eps_values = ((np.arctan((y/(2*r_ib))))/(2/np.pi))*(np.exp(model.gamma*(r_ib - (np.sqrt(r_ib**2 + (y/2.)**2)))))
+			return eps_values
+
+
+def eps_vs_neighbours(p, model, tilde = False):
+	y = []
+	x = []
+	for i in range(p.size):
+		y.append(epsilon(p, i, model, tilde))
+		x.append(neighbours_dist(p, i))
+	x = np.concatenate(x)
+	y = np.concatenate(y)
+	return x, y
+
+def eps_vs_target(p, model, tilde = False):
+	y = []
+	x = []
+	for i in range(p.size):
+		y.append(epsilon(p, i, model, tilde))
+		x.append(target_dist(p, i))
+	x = np.concatenate(x)
+	y = np.concatenate(y)
+	return x, y
+
+def r_jk_plot(p, model, r_jk, r_ib, tilde = False):
+	x = eps_vs_neighbours(p, model, tilde)[0]
+	y = eps_vs_neighbours(p, model, tilde)[1]
+	plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
+	plt.plot(x*np.sqrt(p.size), analytical_eps(p, model, r_jk, r_ib), '.', label = 'theory')
+	linregr = stats.linregress(x, y)
+	plt.plot(x*np.sqrt(p.size), x*np.sqrt(p.size)*linregr[0] +linregr[1], '.', label = 'regression')
+	plt.legend()
+	plt.xlabel('$\~r_{jk}$')
+	plt.ylabel('$\epsilon$')
+	plt.show()
+
+def r_ib_plot(p, model, r_jk, r_ib, tilde = False):
+	x = eps_vs_target(p, model, tilde)[0]
+	y = eps_vs_target(p, model, tilde)[1]
+	plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
+	plt.plot(x*np.sqrt(p.size), analytical_eps(p, model, r_jk, r_ib), '.', label = 'theory')
+	plt.xlabel('$\~r_{ib}$')
+	plt.ylabel('$\epsilon$')
+	plt.legend()
+	plt.show()
+
 def rev_epsilon(p, g, i, tilde = False):
 	'''Using abs!!!'''
 	epsValues = []
@@ -126,37 +184,6 @@ def rev_epsilon(p, g, i, tilde = False):
 		eps = (g2.flux(b, i) - (g.flux(j, i)+g.flux(k, i)))/(g2.flux(b, i))
 		epsValues.append(eps)
 	return np.array(epsValues)
-
-def neighbours_dist_plot(p, model, tilde = False):
-	y = []
-	x = []
-	for i in range(p.size):
-		y.append(epsilon(p, i, model, tilde))
-		x.append(neighbours_dist(p, i))
-	x = np.concatenate(x)
-	y = np.concatenate(y)
-	plt.plot(x*np.sqrt(p.size), y, '.')
-	if isinstance(model, gravity):
-		plt.plot(x*np.sqrt(p.size), np.arctan(x)/(np.pi), label = 'simulation')
-		regress = stats.linregress(x*np.sqrt(p.size), y)
-		plt.plot(x*np.sqrt(p.size), x*np.sqrt(p.size)*regress[0] + regress[1], label = 'theory')
-		plt.legend()
-	plt.xlabel('$\~r_{jk}$')
-	plt.ylabel('$\epsilon$')
-	plt.show()
-
-def target_dist_plot(p, model, tilde = False):
-	y = []
-	x = []
-	for i in range(p.size):
-		y.append(epsilon(p, i, model, tilde))
-		x.append(target_dist(p, i))
-	x = np.concatenate(x)
-	y = np.concatenate(y)
-	plt.plot(x*np.sqrt(p.size), y, '.')
-	plt.xlabel('$\~r_{ib}$')
-	plt.ylabel('$\epsilon$')
-	plt.show()
 
 def contour():
 	'''x = []
