@@ -9,6 +9,9 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import copy
 
+
+
+
 # ------------------ ERROR FUNCTIONS ------------------
 
 def createPops(x,y,N,size,seed):
@@ -64,7 +67,7 @@ def epsilon(mobObj2, mobObj3, ib=True):
 	return eps
 
 
-def epsilon_g(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=2):
+def epsilon_g(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=20):
 	'''
 	Takes the x and y displacements defined in the tripoint problem and returns
 	the error between treating the satellite locations as one and as separate
@@ -75,7 +78,7 @@ def epsilon_g(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=2):
 	'''
 	p2, p3, loci, locb = createPops(x,y,N,size,seed)
 
-	g3 = gravity(p3, alpha=1, beta=1, gamma=gamma, exp=False)
+	g3 = gravity(p3, alpha=1, beta=1, gamma=gamma, exp=True)
 
 	# Use definition of m_b with correction for the intra-location flow
 	if tildeM:
@@ -88,7 +91,7 @@ def epsilon_g(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=2):
 	p2.popDist = np.insert(p2.popDist, 0, np.array([size, sizeb]), axis=0)
 	p2.locCoords = np.insert(p2.locCoords, 0, np.array([loci, locb]), axis=0)
 
-	g2 = gravity(p2, 1, 1, gamma, exp=False)
+	g2 = gravity(p2, 1, 1, gamma, exp=True)
 
 	eps = epsilon(g2, g3, ib=ib)
 
@@ -159,6 +162,12 @@ def anlyt_epsilon(r_ib,r_jk,gamma, tilde_m=False):
 	eps = 1-(1-np.arctan(r_jk/(2*r_ib))/(np.pi))*np.exp(gamma*(r_ib-np.sqrt(r_ib**2 + (r_jk/2)**2)))
 
 	return eps
+
+
+
+
+
+
 
 
 # ------------------ ANALYSIS FUNCTIONS ------------------
@@ -356,12 +365,12 @@ def epsChangeX(xmin, xmax, y, n, N, model='gravity', ib=False, analytical=False,
 	for val in x:
 		epsVals.append(abs(func(val, y, N, ib=ib, seed=seed)))
 
-	yEps = np.array([x * np.sqrt(N), np.array(epsVals)]).T
+	xEps = np.array([x * np.sqrt(N), np.array(epsVals)]).T
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
-	ax.scatter(yEps[:,0], yEps[:,1], s=10, label='Simulation')
+	ax.scatter(xEps[:,0], xEps[:,1], s=10, label='Simulation')
 
 	if analytical:
 		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma)]).T
@@ -377,6 +386,41 @@ def epsChangeX(xmin, xmax, y, n, N, model='gravity', ib=False, analytical=False,
 	plt.show()
 
 	return
+
+def epsChangeGamma(gmin, gmax, r_ib, r_jk, n, N, ib=False):
+	'''
+	Fixes r_ib and r_jk and varies the gamma factor in the gravity model to produce different epsilon values
+
+	'''
+	gamma = np.linspace(gmin, gmax, n)
+
+	epsVals = []
+
+	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+
+	for val in gamma:
+		epsVals.append(abs(epsilon_g(r_ib, r_jk, N, ib=ib, seed=seed, gamma=val)))
+
+	gEps = np.array([gamma, np.array(epsVals)]).T
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.scatter(gEps[:,0], gEps[:,1], s=10)
+
+	plt.rc('text', usetex=True)
+
+	ax.set_xlabel(r'$\gamma$')
+	ax.set_ylabel(r'$\epsilon$')
+
+	plt.title('Gravity model ' + r'$\epsilon(r_{ib},r_{jk})$' + ' - ' + str(N) + ' locations, ' + '$r_{ib}$ = ' + str(r_ib) + ', $r_{jk}$ = ' + str(r_jk))
+
+	plt.show()
+
+	return
+
+
+
 
 
 
