@@ -13,7 +13,7 @@ from scipy import stats
 
 
 def neighb(p, i):
-	'''Returns a list of the nearest neighobours of a given location as a Numpy array.'''
+	'''Returns a list of the nearest neighobours of a given location i as a Numpy array.'''
 
 	neighbours = []
 	distance = []
@@ -29,7 +29,7 @@ def neighb(p, i):
 
 def neighbours(p, k):
 	'''
-	Returns a list of all nearest neighbours pairs - excluding the target location -
+	Returns a list of all nearest neighbours pairs - excluding the target location k -
 	as a Numpy array,
 	'''
 
@@ -41,21 +41,22 @@ def neighbours(p, k):
 
 	return np.array(neighbours)
 
-def neighbours_dist(p, k):
+def r_jk(p, i):
 	'''
-	Returns the (scaled) distance between two nearest neighbours as a Numpy array.
+	Returns the distance between all pairs of nearest neighbours - excluding the
+	target location i - as a Numpy array.
 	The pair's index matches that of neighbours().
 	'''
 
 	distance = []
-	for i in neighbours(p, k):
-		distance.append((p.r(i[0], i[1])))
+	for n in neighbours(p, i):
+		distance.append((p.r(n[0], n[1])))
 
 	return np.array(distance)
 
-def target_dist(p, i):
+def r_ib(p, i):
 	'''
-	Returns the (scaled) distance between the midpoint between two nearest neighbours and the
+	Returns the distance between the midpoint between two nearest neighbours and the
 	target location i as a Numpy array.
 	The pair's index matches that of neighbours().
 	'''
@@ -67,20 +68,23 @@ def target_dist(p, i):
 	return np.array(r)
 
 def epsilon(p, i, model, tilde = False):
-	'''Using abs!!!'''
+	'''
+	Returns epsilon for a given target location i.
+	'''
+
 	epsValues = []
 	for n in neighbours(p, i):
 		j, k = n[0], n[1]
 		p2 = copy.deepcopy(p)
 
 		#move j to midpoint
-
-		p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
 		p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
+		p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
 
 		#if tilde == True:
 		#	p2.popDist[j] = p2.popDist[k] + p2.popDist[j] - p2.popDist[j]*g.flux(j, k) - p2.popDist[k]*g.flux(j, k)
-		p2.popDist[j] = p2.popDist[k] + p2.popDist[j] #merge two populations
+		#merge two populations
+		p2.popDist[j] = p2.popDist[k] + p2.popDist[j]
 
 		p2.popDist[k] = 0. #remove k
 		b = j #rename j
@@ -90,7 +94,9 @@ def epsilon(p, i, model, tilde = False):
 			beta = model.beta
 			gamma = model.gamma
 
-			g2 = gravity(p2, alpha, beta, gamma)
+			g2 = gravity(p2, alpha, beta, gamma, exp=True)
+			#if disp(p.locCoords[j], p2.locCoords[k]) < 0.07:
+			#if disp(p.locCoords[i], p2.locCoords[j]) > disp(p.locCoords[j], p2.locCoords[k]):
 			eps = (g2.flux(i, b) - (model.flux(i, j)+model.flux(i, k)))/(g2.flux(i, b))
 
 		if isinstance(model, radiation):
@@ -101,33 +107,21 @@ def epsilon(p, i, model, tilde = False):
 			gamma = model.gamma
 			o2 = opportunities(p2, gamma)
 			eps = (o2.flux(i, b) - (model.flux(i, j)+model.flux(i, k)))/(o2.flux(i, b))
-		epsValues.append(eps)
+
+		epsValues.append(abs(eps))
 
 	return np.array(epsValues)
 
-def analytical_eps(p, model,r_jk, r_ib, tilde = False):
-	'''
-	Returns the analytical form of epsilon for the exponential gravity model
-	as a function of r_ib.
-	'''
-	if isinstance(model, gravity):
-		if model.exp:
-			x = eps_vs_target(p, model, tilde)[0]
-			y = eps_vs_neighbours(p, model, tilde)[0]
-			#only if m = 1 for all!
-			if r_ib == 0.:
-				eps_values = ((np.arctan((r_jk/(2*x))))/(2/np.pi))*(np.exp(model.gamma*(x - (np.sqrt(x**2 + (r_jk/2.)**2)))))
-			if r_jk == 0.:
-				eps_values = ((np.arctan((y/(2*r_ib))))/(2/np.pi))*(np.exp(model.gamma*(r_ib - (np.sqrt(r_ib**2 + (y/2.)**2)))))
-			return eps_values
-
-
 def eps_vs_neighbours(p, model, tilde = False):
+	'''
+	Returns two arrays with r_jk between all possible target-pair pairs
+	 and the corresponding epsilon.
+	'''
 	y = []
 	x = []
 	for i in range(p.size):
 		y.append(epsilon(p, i, model, tilde))
-		x.append(neighbours_dist(p, i))
+		x.append(r_jk(p, i))
 	x = np.concatenate(x)
 	y = np.concatenate(y)
 	return x, y
@@ -136,76 +130,56 @@ def eps_vs_target(p, model, tilde = False):
 	y = []
 	x = []
 	for i in range(p.size):
+		x.append(r_ib(p, i))
 		y.append(epsilon(p, i, model, tilde))
-		x.append(target_dist(p, i))
 	x = np.concatenate(x)
 	y = np.concatenate(y)
-	return x, y
+	xy = np.array([x, y])
+	xy = xy[:,np.argsort(xy[0])]
+	return xy
+
+def eps_rib(p, model,r_jk, tilde = False):
+	'''
+	Returns the analytical form of epsilon for the exponential gravity model
+	as a function of r_ib.
+	'''
+	if isinstance(model, gravity):
+		if model.exp:
+			x = eps_vs_target(p, model, tilde)[0]
+			for i in x:
+				#only if m = 1 for all!
+				gamma = model.gamma
+				eps_values = 1 - (np.exp(-gamma*(np.sqrt(x**2 + (r_jk/2)**2)-x)))
+				#eps_values = 1-(1-np.arctan(r_jk/(2*x))/(np.pi))*np.exp(model.gamma*(x-np.sqrt(x**2 + (r_jk/2)**2)))
+			return eps_values
 
 def r_jk_plot(p, model, r_jk, r_ib, tilde = False):
 	x = eps_vs_neighbours(p, model, tilde)[0]
 	y = eps_vs_neighbours(p, model, tilde)[1]
 	plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
-	plt.plot(x*np.sqrt(p.size), analytical_eps(p, model, r_jk, r_ib), '.', label = 'theory')
-	linregr = stats.linregress(x, y)
-	plt.plot(x*np.sqrt(p.size), x*np.sqrt(p.size)*linregr[0] +linregr[1], '.', label = 'regression')
-	plt.legend()
+	if isinstance(model, gravity):
+		plt.plot(x*np.sqrt(p.size), eps_rjk(p, model, r_jk, r_ib), '.', label = 'theory')
+		linregr = stats.linregress(x, y)
+		plt.plot(x*np.sqrt(p.size), x*np.sqrt(p.size)*linregr[0] +linregr[1], '.', label = 'regression')
+		plt.legend()
 	plt.xlabel('$\~r_{jk}$')
 	plt.ylabel('$\epsilon$')
 	plt.show()
 
-def r_ib_plot(p, model, r_jk, r_ib, tilde = False):
-	x = eps_vs_target(p, model, tilde)[0]
-	y = eps_vs_target(p, model, tilde)[1]
-	plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
-	plt.plot(x*np.sqrt(p.size), analytical_eps(p, model, r_jk, r_ib), '.', label = 'theory')
+def r_ib_plot(p, model, r_jk, tilde = False):
+	'''
+	Returns plot of epsilon as a function of r_ib, given a costant value of r_jk.
+	'''
+
+	x = eps_vs_target(p, model, tilde)[0, :]
+	y = eps_vs_target(p, model, tilde)[1,:]
+	for i in np.arange(0, len(x), 50):
+		mean_y = np.mean(y[i:i+50])
+		plt.plot(x[i]*np.sqrt(p.size), mean_y, '.')
+	#plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
+	if isinstance(model, gravity):
+		plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
 	plt.xlabel('$\~r_{ib}$')
 	plt.ylabel('$\epsilon$')
 	plt.legend()
 	plt.show()
-
-def rev_epsilon(p, g, i, tilde = False):
-	'''Using abs!!!'''
-	epsValues = []
-	for n in neighbours(p, i):
-		j, k = n[0], n[1]
-		p2 = copy.deepcopy(p)
-
-		#move j to midpoint
-
-		p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
-		p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
-
-		p2.popDist[j] = p2.popDist[k] + p2.popDist[j] #merge two populations
-		p2.popDist[k] = 0. #remove k
-		b = j #rename j
-
-		g2 = gravity(p2, alpha, beta, gamma)
-		eps = (g2.flux(b, i) - (g.flux(j, i)+g.flux(k, i)))/(g2.flux(b, i))
-		epsValues.append(eps)
-	return np.array(epsValues)
-
-def contour():
-	'''x = []
-	y = []
-	z = []
-	for i in range(p.size):
-		x.append(target_dist(i))
-		y.append(neighbours_dist(i))
-		z.append(epsilon(i))
-	x = np.array(x)
-	y = np.array(y)
-	z = np.array(z)'''
-	xi = np.linspace(0,1., 30)
-	yi = np.linspace(0,1., 30)
-	# grid the data.
-	#zi = griddata((x, y), z, (xi[None,:], yi[:,None]), method='cubic')
-	X, Y = np.meshgrid(xi, yi)
-
-	zi = 1 - (np.arctan(Y/X)/(2*np.pi))
-
-	CS = plt.contour(xi,yi,zi,15,linewidths=0.5,colors='k')
-	CS = plt.contourf(xi,yi,zi,15,cmap=plt.cm.jet)
-	plt.colorbar() # draw colorbar
-	# plot data points.
-	#plt.scatter(x,y,marker='o',c='b',s=5)
