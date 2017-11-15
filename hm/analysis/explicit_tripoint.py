@@ -67,7 +67,7 @@ def epsilon(mobObj2, mobObj3, ib=True):
 	return eps
 
 
-def epsilon_g(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=20):
+def epsilon_g(x,y,N, size=1., ib=True, exp=True, seed=False, tildeM=False, gamma=20):
 	'''
 	Takes the x and y displacements defined in the tripoint problem and returns
 	the error between treating the satellite locations as one and as separate
@@ -78,20 +78,20 @@ def epsilon_g(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=20):
 	'''
 	p2, p3, loci, locb = createPops(x,y,N,size,seed)
 
-	g3 = gravity(p3, alpha=1, beta=1, gamma=gamma, exp=True)
+	g3 = gravity(p3, alpha=1, beta=1, gamma=gamma, exp=exp)
 
 	# Use definition of m_b with correction for the intra-location flow
 	if tildeM:
 		sizeb = tilde_m(size, g3)
 	# use traditional definition of population mass m_b
 	else:
-		sizeb = 2*size 
+		sizeb = 2*size
 
 	# Insert locations into two-point
 	p2.popDist = np.insert(p2.popDist, 0, np.array([size, sizeb]), axis=0)
 	p2.locCoords = np.insert(p2.locCoords, 0, np.array([loci, locb]), axis=0)
 
-	g2 = gravity(p2, 1, 1, gamma, exp=True)
+	g2 = gravity(p2, 1, 1, gamma, exp=exp)
 
 	eps = epsilon(g2, g3, ib=ib)
 
@@ -151,7 +151,7 @@ def epsilon_io(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=1.):
 
 	return eps
 
-def anlyt_epsilon(r_ib,r_jk,gamma, tilde_m=False):
+def anlyt_epsilon(r_ib,r_jk,gamma, exp=True, tilde_m=False):
 	'''	
 	Returns the analytical result for epsilon
 
@@ -159,11 +159,15 @@ def anlyt_epsilon(r_ib,r_jk,gamma, tilde_m=False):
 	TODO: include the population mass prefactor
 
 	'''
-	eps = 1-(1-np.arctan(r_jk/(2*r_ib))/(np.pi))*np.exp(gamma*(r_ib-np.sqrt(r_ib**2 + (r_jk/2)**2)))
+	r_ij = np.sqrt(r_ib**2 + (r_jk/2)**2)
+
+	if exp:
+		eps = 1 - np.exp(-gamma * (r_ij - r_ib))
+
+	else:
+		eps = 1 - (r_ij/r_ib)**(-gamma)
 
 	return eps
-
-
 
 
 
@@ -302,7 +306,7 @@ def plotLocs(N, seed, xmin, xmax, ymin, ymax, show=True):
 
 	return
 
-def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False, analytical=False, gamma=20):
+def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=20, exp=True):
 	'''
 	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations
 
@@ -311,15 +315,8 @@ def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False, analytical=False,
 	epsVals = []
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
-	if model=='gravity':
-		func = epsilon_g
-	if model=='radiation':
-		func = epsilon_r
-	if model=='opportunities':
-		func = epsilon_io
-
 	for val in y:
-		epsVals.append(abs(func(x, val, N, ib=ib, seed=seed)))
+		epsVals.append(abs(epsilon_g(x, val, N, ib=ib, seed=seed, gamma=gamma, exp=exp)))
 
 	yEps = np.array([y * np.sqrt(N), np.array(epsVals)]).T
 
@@ -329,7 +326,7 @@ def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False, analytical=False,
 	ax.scatter(yEps[:,0], yEps[:,1], s=10, label='Simulation')
 
 	if analytical:
-		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma)]).T
+		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma, exp=exp)]).T
 		ax.scatter(anlytYEps[:,0], anlytYEps[:,1], s=10, label='Analytical Result')
 
 	ax.legend()
@@ -344,7 +341,7 @@ def epsChangeY(ymin, ymax, x, n, N, model='gravity', ib=False, analytical=False,
 	return
 
 
-def epsChangeX(xmin, xmax, y, n, N, model='gravity', ib=False, analytical=False, gamma=2):
+def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=True):
 	'''
 	Fixes y and varies x across n values between ymin and ymax for a random distribution of N locations
 
@@ -355,15 +352,8 @@ def epsChangeX(xmin, xmax, y, n, N, model='gravity', ib=False, analytical=False,
 
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
-	if model=='gravity':
-		func = epsilon_g
-	if model=='radiation':
-		func = epsilon_r
-	if model=='opportunities':
-		func = epsilon_io
-
 	for val in x:
-		epsVals.append(abs(func(val, y, N, ib=ib, seed=seed)))
+		epsVals.append(abs(epsilon_g(val, y, N, ib=ib, seed=seed, gamma=gamma, exp=exp)))
 
 	xEps = np.array([x * np.sqrt(N), np.array(epsVals)]).T
 
@@ -373,7 +363,7 @@ def epsChangeX(xmin, xmax, y, n, N, model='gravity', ib=False, analytical=False,
 	ax.scatter(xEps[:,0], xEps[:,1], s=10, label='Simulation')
 
 	if analytical:
-		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma)]).T
+		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma, exp=exp)]).T
 		ax.scatter(anlytXEps[:,0], anlytXEps[:,1], s=10, label='Analytical Result')
 
 	ax.legend()
@@ -387,7 +377,7 @@ def epsChangeX(xmin, xmax, y, n, N, model='gravity', ib=False, analytical=False,
 
 	return
 
-def epsChangeGamma(gmin, gmax, r_ib, r_jk, n, N, ib=False):
+def epsChangeGamma(gmin, gmax, r_ib, r_jk, n, N, ib=False, exp=True):
 	'''
 	Fixes r_ib and r_jk and varies the gamma factor in the gravity model to produce different epsilon values
 
@@ -399,7 +389,7 @@ def epsChangeGamma(gmin, gmax, r_ib, r_jk, n, N, ib=False):
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
 	for val in gamma:
-		epsVals.append(abs(epsilon_g(r_ib, r_jk, N, ib=ib, seed=seed, gamma=val)))
+		epsVals.append(abs(epsilon_g(r_ib, r_jk, N, ib=ib, seed=seed, gamma=val, exp=exp)))
 
 	gEps = np.array([gamma, np.array(epsVals)]).T
 
