@@ -66,8 +66,8 @@ def epsilon(mobObj2, mobObj3, ib=True):
 
 	return eps
 
-
 def epsilon_g(x,y,N, size=1., ib=True, exp=True, seed=False, tildeM=False, gamma=20):
+
 	'''
 	Takes the x and y displacements defined in the tripoint problem and returns
 	the error between treating the satellite locations as one and as separate
@@ -168,10 +168,6 @@ def anlyt_epsilon(r_ib,r_jk,gamma, exp=True, tilde_m=False):
 		eps = 1 - (r_ij/r_ib)**(-gamma)
 
 	return eps
-
-
-
-
 
 
 # ------------------ ANALYSIS FUNCTIONS ------------------
@@ -306,9 +302,10 @@ def plotLocs(N, seed, xmin, xmax, ymin, ymax, show=True):
 
 	return
 
-def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=20, exp=True):
+
+def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=True):
 	'''
-	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations
+	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations for gravity model.
 
 	'''
 	y = np.linspace(ymin, ymax, n)
@@ -335,6 +332,8 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=20, exp=Tr
 
 	ax.set_xlabel(r'$r_{jk} \sqrt{N}$')
 	ax.set_ylabel(r'$\epsilon$')
+
+	plt.autoscale(enable=True)
 
 	plt.show()
 
@@ -377,7 +376,9 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	return
 
-def epsChangeGamma(gmin, gmax, r_ib, r_jk, n, N, ib=False, exp=True):
+
+def epsChangeGamma(gmin, gmax, r_ib, r_jk, n, N, ib=False, analytical=False):
+	
 	'''
 	Fixes r_ib and r_jk and varies the gamma factor in the gravity model to produce different epsilon values
 
@@ -396,14 +397,20 @@ def epsChangeGamma(gmin, gmax, r_ib, r_jk, n, N, ib=False, exp=True):
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
-	ax.scatter(gEps[:,0], gEps[:,1], s=10)
+	ax.scatter(gEps[:,0], gEps[:,1], s=10, label='Simulation')
+
+	if analytical:
+		anlytGEps = np.array([gamma, anlyt_epsilon(r_ib, r_jk, gamma=gamma)]).T
+		ax.scatter(anlytGEps[:,0], anlytGEps[:,1], s=10, label='Analytical Result')
+
+	ax.legend()
 
 	plt.rc('text', usetex=True)
 
 	ax.set_xlabel(r'$\gamma$')
 	ax.set_ylabel(r'$\epsilon$')
 
-	plt.title('Gravity model ' + r'$\epsilon(r_{ib},r_{jk})$' + ' - ' + str(N) + ' locations, ' + '$r_{ib}$ = ' + str(r_ib) + ', $r_{jk}$ = ' + str(r_jk))
+	plt.title('Gravity model ' + r'$\epsilon(\gamma)$' + ' - ' + str(N) + ' locations, ' + '$r_{ib}$ = ' + str(r_ib) + ', $r_{jk}$ = ' + str(r_jk))
 
 	plt.show()
 
