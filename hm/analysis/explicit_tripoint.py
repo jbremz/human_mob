@@ -151,6 +151,17 @@ def epsilon_io(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=1.):
 
 	return eps
 
+def anlyt_k(rmin, rmax, gamma, row, exp=True):
+	'''
+	K approximation in a disc with a hole in it
+
+	'''
+
+	if exp:
+		k = 2*np.pi * row * (np.exp(-gamma*rmin)*(gamma*rmin+1)-np.exp(-gamma*rmax)*(gamma*rmax+1))/(gamma**2)
+
+	return k
+
 def anlyt_epsilon(r_ib,r_jk,gamma, exp=True, tilde_m=False):
 	'''	
 	Returns the analytical result for epsilon
