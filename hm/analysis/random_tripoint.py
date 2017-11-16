@@ -74,16 +74,16 @@ def epsilon(p, i, model, tilde = False):
 		j, k = n[0], n[1]
 		p2 = copy.deepcopy(p)
 
-		# move j to midpoint
-		p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
-		p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
-
 		if tilde == True:
 			# use m tilde correction
 			p2.popDist[j] = p2.popDist[k] + p2.popDist[j] - model.flux(j, k) - model.flux(k, j)
 		if tilde == False:
 			# merge two populations
 			p2.popDist[j] = p2.popDist[k] + p2.popDist[j]
+
+		# move j to midpoint
+		p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
+		p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
 
 		p2.popDist[k] = 0. #remove k
 		b = j #rename j
@@ -157,7 +157,12 @@ def eps_rib(p, model,r_jk, tilde = False):
 				gamma = model.gamma
 				eps_values = 1 - (np.exp(-gamma*(np.sqrt(x**2 + (r_jk/2)**2)-x)))
 				#eps_values = 1-(1-(np.arctan(r_jk/(2*x)))/(np.pi))*np.exp(model.gamma*(x-np.sqrt(x**2 + (r_jk/2)**2)))
-			return eps_values
+	if isinstance(model, radiation):
+		x = eps_vs_target(p, model, tilde)[0]
+		for i in x:
+			#only if m = 1 for all!
+			eps_values = 1 - (3 + np.pi*p.size*x**2)/(2 + 3 + np.pi*p.size*(x**2 + (r_jk/2.)**2))
+	return eps_values
 
 def eps_rjk(p, model,r_ib, tilde = False):
 	'''
@@ -181,13 +186,11 @@ def r_jk_plot(p, model, r_ib, tilde = False):
 	'''
 	x = eps_vs_neighbours(p, model, tilde)[0]
 	y = eps_vs_neighbours(p, model, tilde)[1]
-	step = int(p.size/2)
 	plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
-	if isinstance(model, gravity):
-		plt.plot(x*np.sqrt(p.size), eps_rjk(p, model, r_ib), '.', label = 'theory')
-		linregr = stats.linregress(x, y)
-		#plt.plot(x*np.sqrt(p.size), x*np.sqrt(p.size)*linregr[0] +linregr[1], '.', label = 'regression')
-		plt.legend()
+	plt.plot(x*np.sqrt(p.size), eps_rjk(p, model, r_ib), '.', label = 'theory')
+	linregr = stats.linregress(x, y)
+	#plt.plot(x*np.sqrt(p.size), x*np.sqrt(p.size)*linregr[0] +linregr[1], '.', label = 'regression')
+	plt.legend()
 	plt.xlabel('$\~r_{jk}$')
 	plt.ylabel('$\epsilon$')
 	plt.show()
@@ -204,8 +207,7 @@ def r_ib_plot(p, model, r_jk, tilde = False):
 		mean_y = np.mean(y[i:i+step])
 		plt.plot(x[i]*np.sqrt(p.size), mean_y, '.',)
 	#plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
-	if isinstance(model, gravity):
-		plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
+	plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
 	plt.xlabel('$\~r_{ib}$')
 	plt.ylabel('$\epsilon$')
 	plt.legend()
