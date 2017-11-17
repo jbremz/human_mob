@@ -151,29 +151,34 @@ def epsilon_io(x,y,N, size=1., ib=True, seed=False, tildeM=False, gamma=1.):
 
 	return eps
 
-def anlyt_k(rmin, rmax, gamma, row, exp=True):
+def anlyt_k(rmin, rmax, gamma, rho, exp=True):
 	'''
 	K approximation in a disc with a hole in it
 
 	'''
 
 	if exp:
-		k = 2*np.pi * row * (np.exp(-gamma*rmin)*(gamma*rmin+1)-np.exp(-gamma*rmax)*(gamma*rmax+1))/(gamma**2)
+		k = (2*np.pi * rho * (np.exp(-gamma*rmin)*(gamma*rmin+1)-np.exp(-gamma*rmax)*(gamma*rmax+1))/(gamma**2))**(-1)
 
 	return k
 
-def anlyt_epsilon(r_ib,r_jk,gamma, exp=True, tilde_m=False):
+def anlyt_epsilon(r_ib,r_jk,gamma, N=1000, exp=True, tildeM=False):
 	'''	
 	Returns the analytical result for epsilon
 
-	TODO: include tilde m correction
-	TODO: include the population mass prefactor
+	TODO: include tilde m correction for power law
+	TODO: tilde m only works for uniform population distribution
+	TODO: include the population mass prefactor for non uniform population masses.
 
 	'''
 	r_ij = np.sqrt(r_ib**2 + (r_jk/2)**2)
 
 	if exp:
-		eps = 1 - np.exp(-gamma * (r_ij - r_ib))
+		if tildeM:
+			k = anlyt_k(0,np.sqrt(2), gamma, N, exp=True) # TODO: these are very arbitrary rmin and rmax
+			eps = 1 - np.exp(-gamma*(r_ij-r_ib))/(1-k*np.exp(-gamma*r_jk))
+		if not tildeM:
+			eps = 1 - np.exp(-gamma * (r_ij - r_ib))
 
 	else:
 		eps = 1 - (r_ij/r_ib)**(-gamma)
@@ -314,7 +319,7 @@ def plotLocs(N, seed, xmin, xmax, ymin, ymax, show=True):
 	return
 
 
-def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=True):
+def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=True, tildeM=False):
 	'''
 	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations for gravity model.
 
@@ -324,7 +329,7 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
 	for val in y:
-		epsVals.append(abs(epsilon_g(x, val, N, ib=ib, seed=seed, gamma=gamma, exp=exp)))
+		epsVals.append(abs(epsilon_g(x, val, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)))
 
 	yEps = np.array([y * np.sqrt(N), np.array(epsVals)]).T
 
@@ -334,7 +339,7 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	ax.scatter(yEps[:,0], yEps[:,1], s=10, label='Simulation')
 
 	if analytical:
-		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma, exp=exp)]).T
+		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma, exp=exp, tildeM=tildeM)]).T
 		ax.scatter(anlytYEps[:,0], anlytYEps[:,1], s=10, label='Analytical Result')
 
 	ax.legend()
@@ -351,7 +356,7 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	return
 
 
-def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=True):
+def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=True, tildeM=False):
 	'''
 	Fixes y and varies x across n values between ymin and ymax for a random distribution of N locations
 
@@ -363,7 +368,7 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
 	for val in x:
-		epsVals.append(abs(epsilon_g(val, y, N, ib=ib, seed=seed, gamma=gamma, exp=exp)))
+		epsVals.append(abs(epsilon_g(val, y, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)))
 
 	xEps = np.array([x * np.sqrt(N), np.array(epsVals)]).T
 
@@ -373,7 +378,7 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	ax.scatter(xEps[:,0], xEps[:,1], s=10, label='Simulation')
 
 	if analytical:
-		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma, exp=exp)]).T
+		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma, exp=exp, tildeM=tildeM)]).T
 		ax.scatter(anlytXEps[:,0], anlytXEps[:,1], s=10, label='Analytical Result')
 
 	ax.legend()
