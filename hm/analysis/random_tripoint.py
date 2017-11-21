@@ -178,7 +178,13 @@ def eps_rjk(p, model,r_ib, tilde = False):
 				gamma = model.gamma
 				eps_values = 1 - (np.exp(-gamma*(np.sqrt(r_ib**2 + (x/2)**2)-r_ib)))
 				#eps_values = 1-(1-(np.arctan(r_jk/(2*x)))/(np.pi))*np.exp(model.gamma*(x-np.sqrt(x**2 + (r_jk/2)**2)))
-			return eps_values
+	if isinstance(model, radiation):
+		x = eps_vs_neighbours(p, model, tilde)[0]
+		for i in x:
+			#only if m = 1 for all!
+			eps_values = 1 - (3 + np.pi*p.size*r_ib**2)/(2 + 3 + np.pi*p.size*(r_ib**2 + (x/2.)**2))
+
+	return eps_values
 
 def r_jk_plot(p, model, r_ib, tilde = False):
 	'''
@@ -203,14 +209,14 @@ def r_ib_plot(p, model, r_jk, tilde = False):
 	x = eps_vs_target(p, model, tilde)[0, :]
 	y = eps_vs_target(p, model, tilde)[1,:]
 	step = int(p.size/2)
+	theory = eps_rib(p, model, r_jk)
 	for i in np.arange(0, len(x), step):
-		mean_y = np.mean(y[i:i+step])
-		plt.plot(x[i]*np.sqrt(p.size), mean_y, '.',)
+		mean_y = np.mean(y[i-step/2:i+step/2])
+		plt.plot(x[i]*np.sqrt(p.size), float(mean_y)/theory[i], '.')
 	#plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
-	plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
+	#plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
 	plt.xlabel('$\~r_{ib}$')
-	plt.ylabel('$\epsilon$')
-	plt.legend()
+	plt.ylabel('$simulation/\epsilon$')
 	plt.show()
 
 def test_ratio(p, model):
