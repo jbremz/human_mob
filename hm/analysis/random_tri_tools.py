@@ -43,3 +43,32 @@ def contour():
 	plt.colorbar() # draw colorbar
 	# plot data points.
 	#plt.scatter(x,y,marker='o',c='b',s=5)
+
+def neighb(p, i):
+	'''Returns a list of the nearest neighobours of a given location i as a Numpy array.'''
+
+	neighbours = []
+	distance = []
+	js = []
+	for j in range(p.size):
+		if j != i:
+			distance.append(p.r(i, j))
+			js.append(j)
+	n = distance.index(min(distance))
+	neighbours.append([i, js[n]])
+
+	return np.array(neighbours)
+
+def neighbours(p, k):
+	'''
+	Returns a list of all nearest neighbours pairs - excluding the target location k -
+	as a Numpy array,
+	'''
+
+	neighbours = []
+	for i in range(p.size):
+		if i != k:
+			if k not in neighb(p, i):
+				neighbours.append(neighb(p, i)[0])
+
+	return np.array(neighbours)

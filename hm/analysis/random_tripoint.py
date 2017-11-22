@@ -1,111 +1,85 @@
 from hm.hm_models.gravity import gravity
 from hm.hm_models.radiation import radiation
-from hm.hm_models.opportunities import opportunities
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
 from hm.utils.utils import disp
-from scipy import stats
+from sklearn.neighbors import NearestNeighbors
 
-
-def neighb(p, i):
-	'''Returns a list of the nearest neighobours of a given location i as a Numpy array.'''
-
-	neighbours = []
-	distance = []
-	js = []
-	for j in range(p.size):
-		if j != i:
-			distance.append(p.r(i, j))
-			js.append(j)
-	n = distance.index(min(distance))
-	neighbours.append([i, js[n]])
-
-	return np.array(neighbours)
-
-def neighbours(p, k):
+def neighbours(p):
 	'''
-	Returns a list of all nearest neighbours pairs - excluding the target location k -
-	as a Numpy array,
+	Returns array with distances and indices of all pairs of nearest neighours.
 	'''
-
-	neighbours = []
-	for i in range(p.size):
-		if i != k:
-			if k not in neighb(p, i):
-				neighbours.append(neighb(p, i)[0])
-
-	return np.array(neighbours)
+	nbrs = NearestNeighbors(n_neighbors=2, algorithm='ball_tree').fit(p.locCoords)
+	distances, indices = nbrs.kneighbors(p.locCoords)
+	return distances, indices
 
 def r_jk(p, i):
 	'''
-	Returns the distance between all pairs of nearest neighbours - excluding the
-	target location i - as a Numpy array.
-	The pair's index matches that of neighbours().
+	Returns the distance between all pairs of nearest neighbours as a Numpy array
+	- excludint target.
 	'''
-
 	distance = []
-	for n in neighbours(p, i):
-		distance.append((p.r(n[0], n[1])))
-
+	index = np.where(neighbours(p)[1][:,0] != i)
+	index_2 = np.where(neighbours(p)[1][:,1] != i)
+	indices = np.intersect1d(index, index_2)
+	for item in indices:
+		distance.append(neighbours(p)[0][item][1])
 	return np.array(distance)
 
 def r_ib(p, i):
 	'''
 	Returns the distance between the midpoint between two nearest neighbours and the
 	target location i as a Numpy array.
-	The pair's index matches that of neighbours().
 	'''
 
-	r = []
-	for n in neighbours(p, i):
-		x = (p.locCoords[n[0]][0]+ p.locCoords[n[1]][0])*0.5
-		y = (p.locCoords[n[0]][1]+ p.locCoords[n[1]][1])*0.5
-		r.append((disp(p.locCoords[i], np.array([x, y]))))
-	return np.array(r)
+	distance = []
+	for n in neighbours(p)[1]:
+		if n[0] != i and n[1] != i:
+			x = (p.locCoords[n[0]][0]+ p.locCoords[n[1]][0])*0.5
+			y = (p.locCoords[n[0]][1]+ p.locCoords[n[1]][1])*0.5
+			distance.append((disp(p.locCoords[i], np.array([x, y]))))
+	return np.array(distance)
 
 def epsilon(p, i, model, tilde = False):
 	'''
 	Returns epsilon for a given target location i.
 	'''
-
 	epsValues = []
-	for n in neighbours(p, i):
-		j, k = n[0], n[1]
-		p2 = copy.deepcopy(p)
+	for n in neighbours(p)[1]:
+		if n[0] != i and n[1] != i:
+			j, k = n[0], n[1]
+			p2 = copy.deepcopy(p)
 
-		if tilde == True:
-			# use m tilde correction
-			p2.popDist[j] = p2.popDist[k] + p2.popDist[j] - model.flux(j, k) - model.flux(k, j)
-		if tilde == False:
-			# merge two populations
-			p2.popDist[j] = p2.popDist[k] + p2.popDist[j]
+			if tilde == True:
+				# use m tilde correction
+				p2.popDist[j] = p2.popDist[k] + p2.popDist[j] - model.flux(j, k) - model.flux(k, j)
+			if tilde == False:
+				# merge two populations
+				p2.popDist[j] = p2.popDist[k] + p2.popDist[j]
 
-		# move j to midpoint
-		p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
-		p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
+			# move j to midpoint
+			p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
+			p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
 
-		p2.popDist[k] = 0. #remove k
-		b = j #rename j
+			p2.popDist[k] = 0. #remove k
+			b = j #rename j
 
-		if isinstance(model, gravity):
-			alpha = model.alpha
-			beta = model.beta
-			gamma = model.gamma
+			if isinstance(model, gravity):
+				alpha = model.alpha
+				beta = model.beta
+				gamma = model.gamma
 
-			g2 = gravity(p2, alpha, beta, gamma, exp=True)
-			eps = (g2.flux(i, b) - (model.flux(i, j)+model.flux(i, k)))/(g2.flux(i, b))
+				g2 = gravity(p2, alpha, beta, gamma, exp=True)
+				flow_ib = g2.flux(i, b)
+				eps = (flow_ib - (model.flux(i, j)+model.flux(i, k)))/(flow_ib)
 
-		if isinstance(model, radiation):
-			r2 = radiation(p2)
-			eps = (r2.flux(i, b) - (model.flux(i, j)+model.flux(i, k)))/(r2.flux(i, b))
+			if isinstance(model, radiation):
+				r2 = radiation(p2)
+				flow_ib = r2.flux(i, b)
+				eps = (flow_ib - (model.flux(i, j)+model.flux(i, k)))/(flow_ib)
 
-		if isinstance(model, opportunities):
-			gamma = model.gamma
-			o2 = opportunities(p2, gamma)
-			eps = (o2.flux(i, b) - (model.flux(i, j)+model.flux(i, k)))/(o2.flux(i, b))
-
-		epsValues.append(abs(eps))
+			epsValues.append(abs(eps))
 
 	return np.array(epsValues)
 
@@ -124,7 +98,7 @@ def eps_vs_neighbours(p, model, tilde = False):
 	y = np.concatenate(y)
 	xy = np.array([x, y])
 	xy = xy[:,np.argsort(xy[0])]
-	return x, y
+	return xy
 
 def eps_vs_target(p, model, tilde = False):
 	'''
@@ -161,7 +135,8 @@ def eps_rib(p, model,r_jk, tilde = False):
 		x = eps_vs_target(p, model, tilde)[0]
 		for i in x:
 			#only if m = 1 for all!
-			eps_values = 1 - (3 + np.pi*p.size*x**2)/(2 + 3 + np.pi*p.size*(x**2 + (r_jk/2.)**2))
+			eps_values = 1 - ((x**2)*(np.pi*p.size*x**2 - 2))/((x**2 + (r_jk/2.)**2)*(np.pi*p.size*(x**2 + (r_jk/2.)**2 )-1))
+			#eps_values = 1 - (3 + np.pi*p.size*x**2)/(2 + 3 + np.pi*p.size*(x**2 + (r_jk/2.)**2))
 	return eps_values
 
 def eps_rjk(p, model,r_ib, tilde = False):
@@ -182,7 +157,8 @@ def eps_rjk(p, model,r_ib, tilde = False):
 		x = eps_vs_neighbours(p, model, tilde)[0]
 		for i in x:
 			#only if m = 1 for all!
-			eps_values = 1 - (3 + np.pi*p.size*r_ib**2)/(2 + 3 + np.pi*p.size*(r_ib**2 + (x/2.)**2))
+			eps_values = 1 - ((r_ib**2)*(np.pi*p.size*r_ib**2 - 2))/((r_ib**2 + (x/2.)**2)*(np.pi*p.size*(r_ib**2 + (x/2.)**2 )-1))
+			#eps_values = 1 - (3 + np.pi*p.size*r_ib**2)/(2 + 3 + np.pi*p.size*(r_ib**2 + (x/2.)**2))
 
 	return eps_values
 
@@ -190,33 +166,62 @@ def r_jk_plot(p, model, r_ib, tilde = False):
 	'''
 	Plots epsilon as a function of r_jk, given a costant value of r_ib.
 	'''
-	x = eps_vs_neighbours(p, model, tilde)[0]
-	y = eps_vs_neighbours(p, model, tilde)[1]
-	plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
+	eps_neighbours = eps_vs_neighbours(p, model, tilde)
+	x = eps_neighbours[0, :]
+	y = eps_neighbours[1, :]
+	#plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
 	plt.plot(x*np.sqrt(p.size), eps_rjk(p, model, r_ib), '.', label = 'theory')
-	linregr = stats.linregress(x, y)
-	#plt.plot(x*np.sqrt(p.size), x*np.sqrt(p.size)*linregr[0] +linregr[1], '.', label = 'regression')
+	step = int(len(y)/50)
+	for i in np.arange(0, len(x), 1):
+		if i >= step:
+			mean_y = np.mean(y[i-step:i+step])
+			plt.plot(x[i]*np.sqrt(p.size), mean_y, '.')
+		if i < step:
+			mean_y = np.mean(y[i:i+int(step/2)])
+			plt.plot(x[i]*np.sqrt(p.size), mean_y, '.')
 	plt.legend()
 	plt.xlabel('$\~r_{jk}$')
 	plt.ylabel('$\epsilon$')
 	plt.show()
 
+
 def r_ib_plot(p, model, r_jk, tilde = False):
 	'''
 	Plots epsilon as a function of r_ib, given a costant value of r_jk.
 	'''
-
-	x = eps_vs_target(p, model, tilde)[0, :]
-	y = eps_vs_target(p, model, tilde)[1,:]
-	step = int(p.size/2)
-	theory = eps_rib(p, model, r_jk)
-	for i in np.arange(0, len(x), step):
-		mean_y = np.mean(y[i-step/2:i+step/2])
-		plt.plot(x[i]*np.sqrt(p.size), float(mean_y)/theory[i], '.')
+	eps_target = eps_vs_target(p, model, tilde)
+	x = eps_target[0, :]
+	y = eps_target[1,:]
 	#plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
-	#plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
+	plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
+	step = int(len(y)/50)
+	for i in np.arange(0, len(x), 1):
+		if i >= step:
+			mean_y = np.mean(y[i-step:i+step])
+			plt.plot(x[i]*np.sqrt(p.size), mean_y, '.')
+		if i < step:
+			mean_y = np.mean(y[i:i+int(step/2)])
+			plt.plot(x[i]*np.sqrt(p.size), mean_y, '.')
 	plt.xlabel('$\~r_{ib}$')
-	plt.ylabel('$simulation/\epsilon$')
+	plt.ylabel('$\epsilon$')
+	plt.legend()
+	plt.show()
+
+def plot_ratio(p, model, r_jk, tilde = False):
+	eps_target = eps_vs_target(p, model, tilde)
+	x = eps_target[0, :]
+	y = eps_target[1,:]
+	step = int(len(y)/50)
+	theory = eps_rib(p, model, r_jk)
+	mean_y = []
+	for i in np.arange(0, len(x), 1):
+		if i < step:
+			mean_y.append(np.mean(y[i:i+int(step/2)]))
+		if i >= step:
+			mean_y.append(np.mean(y[i-step:i+step]))
+	plt.plot(x*np.sqrt(p.size), mean_y/theory, '.')
+	plt.ylabel('ratio')
+	plt.xlabel('$\~r_{ib}$')
 	plt.show()
 
 def test_ratio(p, model):
