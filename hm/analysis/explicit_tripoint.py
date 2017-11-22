@@ -162,7 +162,7 @@ def anlyt_k(rmin, rmax, gamma, rho, exp=True):
 
 	return k
 
-def anlyt_epsilon(r_ib,r_jk,gamma, N=1000, exp=True, tildeM=False):
+def anlyt_epsilon_g(r_ib,r_jk,gamma, N=1000, exp=True, tildeM=False):
 	'''	
 	Returns the analytical result for epsilon
 
@@ -182,6 +182,22 @@ def anlyt_epsilon(r_ib,r_jk,gamma, N=1000, exp=True, tildeM=False):
 
 	else:
 		eps = 1 - (r_ij/r_ib)**(-gamma)
+
+	return eps
+
+def anlyt_epsilon_r(r_ib,r_jk, N=1000):
+	'''	
+	Returns the analytical result for epsilon
+
+	TODO: include tilde m correction for power law
+	TODO: tilde m only works for uniform population distribution
+	TODO: include the population mass prefactor for non uniform population masses.
+
+	'''
+	r_ij = np.sqrt(r_ib**2 + (r_jk/2)**2)
+	rho = N
+
+	eps = 1 - (r_ib**2/r_ij**2)*(np.pi * rho * r_ib**2 -2)/(np.pi * rho * r_ij**2 - 1)
 
 	return eps
 
@@ -338,7 +354,7 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	ax.scatter(yEps[:,0], yEps[:,1], s=10, label='Simulation')
 
 	if analytical:
-		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma, exp=exp, tildeM=tildeM)]).T
+		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon_g(x, y, gamma=gamma, N=N, exp=exp, tildeM=tildeM)]).T
 		ax.scatter(anlytYEps[:,0], anlytYEps[:,1], s=10, label='Analytical Result')
 
 	ax.legend()
@@ -354,7 +370,57 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	return
 
-def epsChangeYRatio(ymin, ymax, x, n, N, runs=1, ib=False, gamma=2, exp=True, tildeM=False):
+def epsChangeY_r(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False):
+	'''
+	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations for gravity model.
+
+	'''
+	y = np.linspace(ymin, ymax, n)
+	epsVals = np.zeros((n, 1))
+	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+
+	# First run
+	for i, val in enumerate(y):
+		epsVals[i] = epsilon_r(x, val, N, ib=ib, seed=seed)
+
+	# rest of the runs
+	for i in range(runs-1):
+		tempVals = np.zeros((n, 1))
+		seed = int(np.random.rand(1)[0] * 10000000)
+		for j, val in enumerate(y):
+			tempVals[j] = epsilon_r(x, val, N, ib=ib, seed=seed)
+		epsVals = np.concatenate((epsVals, tempVals), axis=1)
+
+	meanEps = np.mean(epsVals, axis=1)
+	sigmaEps = np.std(epsVals, axis=1)/np.sqrt(runs) # TODO - is this the right treatment of error?
+
+	yEps = np.array([y * np.sqrt(N), np.array(meanEps)]).T
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.scatter(yEps[:,0], yEps[:,1], s=10, label='Simulation')
+
+	if analytical:
+		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon_r(x, y, N=N)]).T
+		ax.scatter(anlytYEps[:,0], anlytYEps[:,1], s=10, label='Analytical Result')
+
+	ax.legend()
+
+	ax.errorbar(yEps[:,0], yEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2)
+
+	plt.rc('text', usetex=True)
+
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$')
+	ax.set_ylabel(r'$\epsilon$')
+
+	plt.autoscale(enable=True)
+
+	plt.show()
+
+	return
+
+def epsChangeYRatio_g(ymin, ymax, x, n, N, runs=1, ib=False, gamma=2, exp=True, tildeM=False):
 	'''
 	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations for gravity model.
 
@@ -382,13 +448,15 @@ def epsChangeYRatio(ymin, ymax, x, n, N, runs=1, ib=False, gamma=2, exp=True, ti
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
-	anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma, exp=exp, tildeM=tildeM)]).T
+	anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon_g(x, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
 	ax.scatter(yEps[:,0], yEps[:,1]/anlytYEps[:,1], s=10)
+
+	ax.errorbar(yEps[:,0], yEps[:,1]/anlytYEps[:,1], yerr=sigmaEps/anlytYEps[:,1], elinewidth=1, fmt='o', ms=2)
 
 	plt.rc('text', usetex=True)
 
-	ax.set_xlabel(r'$r_{jk} \sqrt{N}$')
-	ax.set_ylabel(r'$\frac{\bar{\epsilon_{sim}}}{\epsilon_{ana}}$')
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=15)
+	ax.set_ylabel(r'$\frac{\bar{\epsilon_{sim}}}{\epsilon_{ana}}$', fontsize=25)
 
 	plt.autoscale(enable=True)
 
@@ -396,6 +464,49 @@ def epsChangeYRatio(ymin, ymax, x, n, N, runs=1, ib=False, gamma=2, exp=True, ti
 
 	return
 
+def epsChangeYRatio_r(ymin, ymax, x, n, N, runs=1, ib=False):
+	'''
+	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations for gravity model.
+
+	'''
+	y = np.linspace(ymin, ymax, n)
+
+	epsVals = np.zeros((n,1))
+
+	for i, val in enumerate(y):
+		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+		epsVals[i] = epsilon_r(x, val, N, ib=ib, seed=seed)
+
+	for i in np.arange(runs-1):
+		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+		tempVals = np.zeros((n,1))
+		for l, val in enumerate(y):
+			tempVals[l] = epsilon_r(x, val, N, ib=ib, seed=seed)
+		epsVals = np.concatenate((epsVals, tempVals), axis=1)
+
+	meanEps = np.mean(epsVals, axis=1)
+	sigmaEps = np.std(epsVals, axis=1)/np.sqrt(runs) # TODO - is this the right treatment of error?
+
+	yEps = np.array([y * np.sqrt(N), np.array(meanEps)]).T
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon_r(x, y, N=N)]).T
+	ax.scatter(yEps[:,0], yEps[:,1]/anlytYEps[:,1], s=10)
+
+	ax.errorbar(yEps[:,0], yEps[:,1]/anlytYEps[:,1], yerr=sigmaEps/anlytYEps[:,1], elinewidth=1, fmt='o', ms=2)
+
+	plt.rc('text', usetex=True)
+
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=15)
+	ax.set_ylabel(r'$\frac{\bar{\epsilon_{sim}}}{\epsilon_{ana}}$', fontsize=25)
+
+	plt.autoscale(enable=True)
+
+	plt.show()
+
+	return
 
 def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=True, tildeM=False):
 	'''
@@ -419,7 +530,7 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	ax.scatter(xEps[:,0], xEps[:,1], s=10, label='Simulation')
 
 	if analytical:
-		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma, exp=exp, tildeM=tildeM)]).T
+		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_g(x, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
 		ax.scatter(anlytXEps[:,0], anlytXEps[:,1], s=10, label='Analytical Result')
 
 	ax.legend()
@@ -433,7 +544,57 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	return
 
-def epsChangeXRatio(xmin, xmax, y, n, N, runs=1, ib=False, gamma=2, exp=True, tildeM=False):
+def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
+	'''
+	Fixes y and varies x across n values between ymin and ymax for a random distribution of N locations
+
+	'''
+	x = np.linspace(xmin, xmax, n)
+
+	epsVals = np.zeros((n,1))
+
+	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+
+	# First run
+	for i, val in enumerate(x):
+		epsVals[i] = epsilon_r(val, y, N, ib=ib, seed=seed)
+
+	# rest of the runs
+	for i in range(runs-1):
+		tempVals = np.zeros((n, 1))
+		seed = int(np.random.rand(1)[0] * 10000000)
+		for j, val in enumerate(x):
+			tempVals[j] = epsilon_r(val, y, N, ib=ib, seed=seed)
+		epsVals = np.concatenate((epsVals, tempVals), axis=1)
+
+	meanEps = np.mean(epsVals, axis=1)
+	sigmaEps = np.std(epsVals, axis=1)/np.sqrt(runs) # TODO - is this the right treatment of error?
+
+	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.scatter(xEps[:,0], xEps[:,1], s=10, label='Simulation')
+
+	if analytical:
+		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_r(x, y, N=N)]).T
+		ax.scatter(anlytXEps[:,0], anlytXEps[:,1], s=10, label='Analytical Result')
+
+	ax.errorbar(xEps[:,0], xEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2)
+
+	ax.legend()
+
+	plt.rc('text', usetex=True)
+
+	ax.set_xlabel(r'$r_{ib} \sqrt{N}$')
+	ax.set_ylabel(r'$\epsilon$')
+
+	plt.show()
+
+	return
+
+def epsChangeXRatio_g(xmin, xmax, y, n, N, runs=1, ib=False, gamma=2, exp=True, tildeM=False):
 	'''
 	Fixes y and varies x across n values between ymin and ymax for a random distribution of N locations
 
@@ -460,18 +621,60 @@ def epsChangeXRatio(xmin, xmax, y, n, N, runs=1, ib=False, gamma=2, exp=True, ti
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
-	anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon(x, y, gamma=gamma, exp=exp, tildeM=tildeM)]).T
+	anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_g(x, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
 	ax.scatter(anlytXEps[:,0], xEps[:,1]/anlytXEps[:,1], s=10, label='Analytical Result')
+
+	ax.errorbar(xEps[:,0], xEps[:,1]/anlytXEps[:,1], yerr=sigmaEps/anlytXEps[:,1], elinewidth=1, fmt='o', ms=2)
 
 	plt.rc('text', usetex=True)
 
-	ax.set_xlabel(r'$r_{ib} \sqrt{N}$')
-	ax.set_ylabel(r'$\frac{\bar{\epsilon_{sim}}}{\epsilon_{ana}}$')
+	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=15)
+	ax.set_ylabel(r'$\frac{\bar{\epsilon_{sim}}}{\epsilon_{ana}}$', fontsize=25)
 
 	plt.show()
 
 	return
 
+def epsChangeXRatio_r(xmin, xmax, y, n, N, runs=1, ib=False):
+	'''
+	Fixes y and varies x across n values between ymin and ymax for a random distribution of N locations
+
+	'''
+	x = np.linspace(xmin, xmax, n)
+	epsVals = np.zeros((n,1))
+
+	for i, val in enumerate(x):
+		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+		epsVals[i] = epsilon_r(val, y, N, ib=ib, seed=seed)
+
+	for i in np.arange(runs-1):
+		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+		tempVals = np.zeros((n,1))
+		for l, val in enumerate(x):
+			tempVals[l] = epsilon_r(val, y, N, ib=ib, seed=seed)
+		epsVals = np.concatenate((epsVals, tempVals), axis=1)
+
+	meanEps = np.mean(epsVals, axis=1)
+	sigmaEps = np.std(epsVals, axis=1)/np.sqrt(runs) # TODO - is this the right treatment of error?
+
+	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_r(x, y, N=N)]).T
+	ax.scatter(anlytXEps[:,0], xEps[:,1]/anlytXEps[:,1], s=10, label='Analytical Result')
+
+	ax.errorbar(xEps[:,0], xEps[:,1]/anlytXEps[:,1], yerr=sigmaEps/anlytXEps[:,1], elinewidth=1, fmt='o', ms=2)
+
+	plt.rc('text', usetex=True)
+
+	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=15)
+	ax.set_ylabel(r'$\frac{\bar{\epsilon_{sim}}}{\epsilon_{ana}}$', fontsize=25)
+
+	plt.show()
+
+	return
 
 def epsChangeGamma(gmin, gmax, r_ib, r_jk, n, N, ib=False, analytical=False):
 	
@@ -496,7 +699,7 @@ def epsChangeGamma(gmin, gmax, r_ib, r_jk, n, N, ib=False, analytical=False):
 	ax.scatter(gEps[:,0], gEps[:,1], s=10, label='Simulation')
 
 	if analytical:
-		anlytGEps = np.array([gamma, anlyt_epsilon(r_ib, r_jk, gamma=gamma)]).T
+		anlytGEps = np.array([gamma, anlyt_epsilon_g(r_ib, r_jk, gamma=gamma, N=N)]).T
 		ax.scatter(anlytGEps[:,0], anlytGEps[:,1], s=10, label='Analytical Result')
 
 	ax.legend()
