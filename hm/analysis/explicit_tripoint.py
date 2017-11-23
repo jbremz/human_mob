@@ -8,7 +8,7 @@ import seaborn as sns; sns.set()
 import matplotlib.pyplot as plt 
 from matplotlib.ticker import FormatStrFormatter
 import copy
-
+from scipy.stats import chisquare
 
 
 
@@ -464,24 +464,25 @@ def epsChangeYRatio_g(ymin, ymax, x, n, N, runs=1, ib=False, gamma=2, exp=True, 
 
 	return
 
-def epsChangeYRatio_r(ymin, ymax, x, n, N, runs=1, ib=False):
+def epsChangeYRatio_r(ymin, ymax, x, n, N, runs=1, ib=True):
 	'''
 	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations for gravity model.
 
 	'''
 	y = np.linspace(ymin, ymax, n)
+	epsVals = np.zeros((n, 1))
+	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
-	epsVals = np.zeros((n,1))
-
+	# First run
 	for i, val in enumerate(y):
-		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 		epsVals[i] = epsilon_r(x, val, N, ib=ib, seed=seed)
 
-	for i in np.arange(runs-1):
-		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
-		tempVals = np.zeros((n,1))
-		for l, val in enumerate(y):
-			tempVals[l] = epsilon_r(x, val, N, ib=ib, seed=seed)
+	# rest of the runs
+	for i in range(runs-1):
+		tempVals = np.zeros((n, 1))
+		seed = int(np.random.rand(1)[0] * 10000000)
+		for j, val in enumerate(y):
+			tempVals[j] = epsilon_r(x, val, N, ib=ib, seed=seed)
 		epsVals = np.concatenate((epsVals, tempVals), axis=1)
 
 	meanEps = np.mean(epsVals, axis=1)
