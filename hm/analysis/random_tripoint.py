@@ -130,13 +130,11 @@ def eps_rib(p, model,r_jk, tilde = False):
 				#only if m = 1 for all!
 				gamma = model.gamma
 				eps_values = 1 - (np.exp(-gamma*(np.sqrt(x**2 + (r_jk/2)**2)-x)))
-				#eps_values = 1-(1-(np.arctan(r_jk/(2*x)))/(np.pi))*np.exp(model.gamma*(x-np.sqrt(x**2 + (r_jk/2)**2)))
 	if isinstance(model, radiation):
 		x = eps_vs_target(p, model, tilde)[0]
 		for i in x:
 			#only if m = 1 for all!
 			eps_values = 1 - ((x**2)*(np.pi*p.size*x**2 - 2))/((x**2 + (r_jk/2.)**2)*(np.pi*p.size*(x**2 + (r_jk/2.)**2 )-1))
-			#eps_values = 1 - (3 + np.pi*p.size*x**2)/(2 + 3 + np.pi*p.size*(x**2 + (r_jk/2.)**2))
 	return eps_values
 
 def eps_rjk(p, model,r_ib, tilde = False):
@@ -152,13 +150,11 @@ def eps_rjk(p, model,r_ib, tilde = False):
 				#only if m = 1 for all!
 				gamma = model.gamma
 				eps_values = 1 - (np.exp(-gamma*(np.sqrt(r_ib**2 + (x/2)**2)-r_ib)))
-				#eps_values = 1-(1-(np.arctan(r_jk/(2*x)))/(np.pi))*np.exp(model.gamma*(x-np.sqrt(x**2 + (r_jk/2)**2)))
 	if isinstance(model, radiation):
 		x = eps_vs_neighbours(p, model, tilde)[0]
 		for i in x:
 			#only if m = 1 for all!
 			eps_values = 1 - ((r_ib**2)*(np.pi*p.size*r_ib**2 - 2))/((r_ib**2 + (x/2.)**2)*(np.pi*p.size*(r_ib**2 + (x/2.)**2 )-1))
-			#eps_values = 1 - (3 + np.pi*p.size*r_ib**2)/(2 + 3 + np.pi*p.size*(r_ib**2 + (x/2.)**2))
 
 	return eps_values
 
@@ -166,42 +162,52 @@ def r_jk_plot(p, model, r_ib, tilde = False):
 	'''
 	Plots epsilon as a function of r_jk, given a costant value of r_ib.
 	'''
-	eps_neighbours = eps_vs_neighbours(p, model, tilde)
-	x = eps_neighbours[0, :]
-	y = eps_neighbours[1, :]
-	#plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
+
+	x = mean_r_ib(p, model, r_jk, tilde = False)[0]
+	mean_y = mean_r_jk(p, model, r_ib, tilde = False)[1]
+	plt.plot(x*np.sqrt(p.size), mean_y, '.', label = 'simulation')
 	plt.plot(x*np.sqrt(p.size), eps_rjk(p, model, r_ib), '.', label = 'theory')
-	step = int(len(y)/50)
-	for i in np.arange(0, len(x), 1):
-		if i >= step:
-			mean_y = np.mean(y[i-step:i+step])
-			plt.plot(x[i]*np.sqrt(p.size), mean_y, '.')
-		if i < step:
-			mean_y = np.mean(y[i:i+int(step/2)])
-			plt.plot(x[i]*np.sqrt(p.size), mean_y, '.')
 	plt.legend()
 	plt.xlabel('$\~r_{jk}$')
 	plt.ylabel('$\epsilon$')
 	plt.show()
 
+def mean_r_ib(p, model, r_jk, tilde = False):
+	eps_target = eps_vs_target(p, model, tilde)
+	x = eps_target[0, :]
+	y = eps_target[1,:]
+	step = int(len(y)/60)
+	mean_y = []
+	for i in np.arange(0, len(x), 1):
+		if i >= step:
+			mean_y.append(np.mean(y[i-step:i+step]))
+		if i < step:
+			mean_y.append(np.mean(y[i:i+int(step/2)]))
+	return x, mean_y
+
+def mean_r_jk(p, model, r_jk, tilde = False):
+	eps_neighbours = eps_vs_neighbours(p, model, tilde)
+	x = eps_neighbours[0, :]
+	y = eps_neighbours[1,:]
+	step = int(len(y)/60)
+	mean_y = []
+	for i in np.arange(0, len(x), 1):
+		if i >= step:
+			mean_y.append(np.mean(y[i-step:i+step]))
+		if i < step:
+			mean_y.append(np.mean(y[i:i+int(step/2)]))
+	return x, mean_y
 
 def r_ib_plot(p, model, r_jk, tilde = False):
 	'''
 	Plots epsilon as a function of r_ib, given a costant value of r_jk.
 	'''
-	eps_target = eps_vs_target(p, model, tilde)
-	x = eps_target[0, :]
-	y = eps_target[1,:]
+
 	#plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
+	x = mean_r_ib(p, model, r_jk, tilde = False)[0]
+	mean_y = mean_r_ib(p, model, r_jk, tilde = False)[1]
 	plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
-	step = int(len(y)/50)
-	for i in np.arange(0, len(x), 1):
-		if i >= step:
-			mean_y = np.mean(y[i-step:i+step])
-			plt.plot(x[i]*np.sqrt(p.size), mean_y, '.')
-		if i < step:
-			mean_y = np.mean(y[i:i+int(step/2)])
-			plt.plot(x[i]*np.sqrt(p.size), mean_y, '.')
+	plt.plot(x*np.sqrt(p.size), mean_y, '.')
 	plt.xlabel('$\~r_{ib}$')
 	plt.ylabel('$\epsilon$')
 	plt.legend()
@@ -211,7 +217,7 @@ def plot_ratio(p, model, r_jk, tilde = False):
 	eps_target = eps_vs_target(p, model, tilde)
 	x = eps_target[0, :]
 	y = eps_target[1,:]
-	step = int(len(y)/50)
+	step = int(len(y)/20)
 	theory = eps_rib(p, model, r_jk)
 	mean_y = []
 	for i in np.arange(0, len(x), 1):
