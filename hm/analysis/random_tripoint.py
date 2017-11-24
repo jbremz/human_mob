@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import copy
 from hm.utils.utils import disp
 from sklearn.neighbors import NearestNeighbors
+from scipy.stats import chisquare
 
 def neighbours(p):
 	'''
@@ -126,6 +127,7 @@ def eps_rib(p, model,r_jk, tilde = False):
 	if isinstance(model, gravity):
 		if model.exp:
 			x = eps_vs_target(p, model, tilde)[0]
+			#unnecessary loop below!!!!!!!! CHANGE
 			for i in x:
 				#only if m = 1 for all!
 				gamma = model.gamma
@@ -134,7 +136,8 @@ def eps_rib(p, model,r_jk, tilde = False):
 		x = eps_vs_target(p, model, tilde)[0]
 		for i in x:
 			#only if m = 1 for all!
-			eps_values = 1 - ((x**2)*(np.pi*p.size*x**2 - 2))/((x**2 + (r_jk/2.)**2)*(np.pi*p.size*(x**2 + (r_jk/2.)**2 )-1))
+			#changed today
+			eps_values = 1 - ((x**2)*(np.pi*p.size*x**2 - 1))/((x**2 + (r_jk/2.)**2)*(np.pi*p.size*(x**2 + (r_jk/2.)**2 )))
 	return eps_values
 
 def eps_rjk(p, model,r_ib, tilde = False):
@@ -150,6 +153,7 @@ def eps_rjk(p, model,r_ib, tilde = False):
 				#only if m = 1 for all!
 				gamma = model.gamma
 				eps_values = 1 - (np.exp(-gamma*(np.sqrt(r_ib**2 + (x/2)**2)-r_ib)))
+
 	if isinstance(model, radiation):
 		x = eps_vs_neighbours(p, model, tilde)[0]
 		for i in x:
@@ -163,7 +167,7 @@ def r_jk_plot(p, model, r_ib, tilde = False):
 	Plots epsilon as a function of r_jk, given a costant value of r_ib.
 	'''
 
-	x = mean_r_ib(p, model, r_jk, tilde = False)[0]
+	x = mean_r_jk(p, model, r_jk, tilde = False)[0]
 	mean_y = mean_r_jk(p, model, r_ib, tilde = False)[1]
 	plt.plot(x*np.sqrt(p.size), mean_y, '.', label = 'simulation')
 	plt.plot(x*np.sqrt(p.size), eps_rjk(p, model, r_ib), '.', label = 'theory')
@@ -230,12 +234,37 @@ def plot_ratio(p, model, r_jk, tilde = False):
 	plt.xlabel('$\~r_{ib}$')
 	plt.show()
 
-def test_ratio(p, model):
-	#delta_theta = 2*np.arctan(r_jk/(2*r_ib))
-	#integral = ((2*np.pi- delta_theta)/model.gamma**2) * (model.gamma*np.sqrt(1./p.size))
-	r_ij = np.arange(0., 1., 0.01)
-	r_jk = 0.1
-	r_ib = np.sqrt(r_ij**2 - (r_jk/2.)**2)
-	ratio = (np.exp(-model.gamma*r_ij))/(np.exp(-model.gamma*r_ib))
-	plt.plot(r_ij, ratio)
-	plt.show()
+def chi_squared_ib(p, model, r_jk):
+	chi = []
+	a_s = []
+	for a in np.arange(0.5, 2.5, 0.1):
+		obs = []
+		for i in range(p.size):
+
+			x = eps_vs_target(p, model, tilde= False)[0]
+			gamma = model.gamma
+			eps_values = 1 - (np.exp(-gamma*(np.sqrt(x**2 + (r_jk/2)**2)-x)))/a
+
+			for n in neighbours(p)[1]:
+				if n[0] != i and n[1] != i:
+					j, k = n[0], n[1]
+					p2 = copy.deepcopy(p)
+					p2.popDist[j] = a
+
+					# move j to midpoint
+					p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
+					p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
+
+					p2.popDist[k] = 0. #remove k
+					b = j #rename j
+
+					alpha = model.alpha
+					beta = model.beta
+					gamma = model.gamma
+					g2 = gravity(p2, alpha, beta, gamma, exp=True)
+					flow_ib = g2.flux(i, b)
+					eps = (flow_ib - (model.flux(i, j)+model.flux(i, k)))/(flow_ib)
+					obs.append(eps)
+		a_s.append(a)
+		chi.append(chisquare(obs, f_exp = eps_values))
+	return min(chi), a_s[chi.index(min(chi))]

@@ -72,3 +72,13 @@ def neighbours(p, k):
 				neighbours.append(neighb(p, i)[0])
 
 	return np.array(neighbours)
+
+def test_ratio(p, model):
+	#delta_theta = 2*np.arctan(r_jk/(2*r_ib))
+	#integral = ((2*np.pi- delta_theta)/model.gamma**2) * (model.gamma*np.sqrt(1./p.size))
+	r_ij = np.arange(0., 1., 0.01)
+	r_jk = 0.1
+	r_ib = np.sqrt(r_ij**2 - (r_jk/2.)**2)
+	ratio = (np.exp(-model.gamma*r_ij))/(np.exp(-model.gamma*r_ib))
+	plt.plot(r_ij, ratio)
+	plt.show()
