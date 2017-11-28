@@ -66,7 +66,7 @@ def epsilon(mobObj2, mobObj3, ib=True):
 
 	return eps
 
-def epsilon_g(x,y,N, size=1., ib=True, exp=True, seed=False, tildeM=False, gamma=20):
+def epsilon_g(x,y,N, size=1., ib=True, exp=True, seed=False, tildeM=2, gamma=20):
 
 	'''
 	Takes the x and y displacements defined in the tripoint problem and returns
@@ -80,15 +80,8 @@ def epsilon_g(x,y,N, size=1., ib=True, exp=True, seed=False, tildeM=False, gamma
 
 	g3 = gravity(p3, alpha=1, beta=1, gamma=gamma, exp=exp)
 
-	# Use definition of m_b with correction for the intra-location flow
-	if tildeM:
-		sizeb = tilde_m(size, g3)
-	# use traditional definition of population mass m_b
-	else:
-		sizeb = 2*size
-
 	# Insert locations into two-point
-	p2.popDist = np.insert(p2.popDist, 0, np.array([size, sizeb]), axis=0)
+	p2.popDist = np.insert(p2.popDist, 0, np.array([size, tildeM]), axis=0)
 	p2.locCoords = np.insert(p2.locCoords, 0, np.array([loci, locb]), axis=0)
 
 	g2 = gravity(p2, 1, 1, gamma, exp=exp)
@@ -174,10 +167,9 @@ def anlyt_epsilon_g(r_ib,r_jk,gamma, N=1000, exp=True, tildeM=False):
 	r_ij = np.sqrt(r_ib**2 + (r_jk/2)**2)
 
 	if exp:
-		if tildeM:
-			k = anlyt_k(0,np.sqrt(2), gamma, N, exp=True) # TODO: these are very arbitrary rmin and rmax
-			eps = 1 - np.exp(-gamma*(r_ij-r_ib))/(1-k*np.exp(-gamma*r_jk))
-		if not tildeM:
+		if type(tildeM) != bool:
+			eps = 1 - (2*np.exp(-gamma*(r_ij)))/(tildeM*np.exp(-gamma*(r_ib)))
+		else:
 			eps = 1 - np.exp(-gamma * (r_ij - r_ib))
 
 	else:
@@ -197,7 +189,7 @@ def anlyt_epsilon_r(r_ib,r_jk, N=1000):
 	r_ij = np.sqrt(r_ib**2 + (r_jk/2)**2)
 	rho = N
 
-	eps = 1 - (r_ib**2/r_ij**2)*(np.pi * rho * r_ib**2 -2)/(np.pi * rho * r_ij**2 - 1)
+	eps = 1 - (r_ib**2/r_ij**2)*(np.pi * rho * r_ib**2 + 2)/(np.pi * rho * r_ij**2 + 1)
 
 	return eps
 
@@ -509,7 +501,7 @@ def epsChangeYRatio_r(ymin, ymax, x, n, N, runs=1, ib=True):
 
 	return
 
-def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=True, tildeM=False):
+def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=True, tildeM=2):
 	'''
 	Fixes y and varies x across n values between ymin and ymax for a random distribution of N locations
 
@@ -521,7 +513,7 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
 	for val in x:
-		epsVals.append(abs(epsilon_g(val, y, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)))
+		epsVals.append(epsilon_g(val, y, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM))
 
 	xEps = np.array([x * np.sqrt(N), np.array(epsVals)]).T
 
@@ -595,7 +587,7 @@ def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 
 	return
 
-def epsChangeXRatio_g(xmin, xmax, y, n, N, runs=1, ib=False, gamma=2, exp=True, tildeM=False):
+def epsChangeXRatio_g(xmin, xmax, y, n, N, runs=1, ib=False, gamma=2, exp=True, tildeM=2):
 	'''
 	Fixes y and varies x across n values between ymin and ymax for a random distribution of N locations
 
@@ -623,7 +615,7 @@ def epsChangeXRatio_g(xmin, xmax, y, n, N, runs=1, ib=False, gamma=2, exp=True, 
 	ax = fig.add_subplot(111)
 
 	anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_g(x, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
-	ax.scatter(anlytXEps[:,0], xEps[:,1]/anlytXEps[:,1], s=10, label='Analytical Result')
+	# ax.scatter(anlytXEps[:,0], xEps[:,1]/anlytXEps[:,1], s=10)
 
 	ax.errorbar(xEps[:,0], xEps[:,1]/anlytXEps[:,1], yerr=sigmaEps/anlytXEps[:,1], elinewidth=1, fmt='o', ms=2)
 
