@@ -82,3 +82,20 @@ def test_ratio(p, model):
 	ratio = (np.exp(-model.gamma*r_ij))/(np.exp(-model.gamma*r_ib))
 	plt.plot(r_ij, ratio)
 	plt.show()
+
+def chi_squared_ib(p, model, r_jk):
+chi = []
+a_s = []
+for a in np.arange(0.5, 3.5, 0.1):
+	eps_function = eps_vs_target(p, model, tilde= False)
+	x = eps_function[0]
+	obs = eps_function[1]
+	print(obs)
+	pdf_obs = np.bincount(obs)
+	print(pdf_obs)
+	gamma = model.gamma
+	eps_values = 1 - (2*np.exp(-gamma*(np.sqrt(x**2 + (r_jk/2)**2)-x)))/a
+	a_s.append(a)
+	pdf_exp = np.bincount(ep)
+	chi.append(chisquare(obs, f_exp = eps_values))
+#return min(chi), a_s[chi.index(min(chi))]

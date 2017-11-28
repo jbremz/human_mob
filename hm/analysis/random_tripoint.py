@@ -137,7 +137,7 @@ def eps_rib(p, model,r_jk, tilde = False):
 		for i in x:
 			#only if m = 1 for all!
 			#changed today
-			eps_values = 1 - ((x**2)*(np.pi*p.size*x**2 - 1))/((x**2 + (r_jk/2.)**2)*(np.pi*p.size*(x**2 + (r_jk/2.)**2 )))
+			eps_values = 1 - ((x**2)*(np.pi*p.size*x**2 + 2))/((x**2 + (r_jk/2.)**2)*(np.pi*p.size*(x**2 + (r_jk/2.)**2 )+1))
 	return eps_values
 
 def eps_rjk(p, model,r_ib, tilde = False):
@@ -158,7 +158,7 @@ def eps_rjk(p, model,r_ib, tilde = False):
 		x = eps_vs_neighbours(p, model, tilde)[0]
 		for i in x:
 			#only if m = 1 for all!
-			eps_values = 1 - ((r_ib**2)*(np.pi*p.size*r_ib**2 - 2))/((r_ib**2 + (x/2.)**2)*(np.pi*p.size*(r_ib**2 + (x/2.)**2 )-1))
+			eps_values = 1 - ((r_ib**2)*(np.pi*p.size*r_ib**2 + 2))/((r_ib**2 + (x/2.)**2)*(np.pi*p.size*(r_ib**2 + (x/2.)**2 )+1))
 
 	return eps_values
 
@@ -226,45 +226,10 @@ def plot_ratio(p, model, r_jk, tilde = False):
 	mean_y = []
 	for i in np.arange(0, len(x), 1):
 		if i < step:
-			mean_y.append(np.mean(y[i:i+int(step/2)]))
+			mean_y.append(p.size*np.mean(y[i:i+int(step/2)]))
 		if i >= step:
-			mean_y.append(np.mean(y[i-step:i+step]))
-	plt.plot(x*np.sqrt(p.size), mean_y/theory, '.')
+			mean_y.append(p.size*np.mean(y[i-step:i+step]))
+	#plt.plot(x*np.sqrt(p.size), mean_y/theory, '.')
+	plt.plot(x, mean_y/theory, '.')
 	plt.ylabel('ratio')
 	plt.xlabel('$\~r_{ib}$')
-	plt.show()
-
-def chi_squared_ib(p, model, r_jk):
-	chi = []
-	a_s = []
-	for a in np.arange(0.5, 2.5, 0.1):
-		obs = []
-		for i in range(p.size):
-
-			x = eps_vs_target(p, model, tilde= False)[0]
-			gamma = model.gamma
-			eps_values = 1 - (np.exp(-gamma*(np.sqrt(x**2 + (r_jk/2)**2)-x)))/a
-
-			for n in neighbours(p)[1]:
-				if n[0] != i and n[1] != i:
-					j, k = n[0], n[1]
-					p2 = copy.deepcopy(p)
-					p2.popDist[j] = a
-
-					# move j to midpoint
-					p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
-					p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
-
-					p2.popDist[k] = 0. #remove k
-					b = j #rename j
-
-					alpha = model.alpha
-					beta = model.beta
-					gamma = model.gamma
-					g2 = gravity(p2, alpha, beta, gamma, exp=True)
-					flow_ib = g2.flux(i, b)
-					eps = (flow_ib - (model.flux(i, j)+model.flux(i, k)))/(flow_ib)
-					obs.append(eps)
-		a_s.append(a)
-		chi.append(chisquare(obs, f_exp = eps_values))
-	return min(chi), a_s[chi.index(min(chi))]
