@@ -34,7 +34,7 @@ def createPops(x,y,N,size,seed):
 	p3 = copy.deepcopy(p) # the tripoint arrangement
 	p2 = copy.deepcopy(p) # the two-point arrangement
 
-	p3.locCoords = np.insert(p3.locCoords, 0, np.array([loci, locj, lock]), axis=0)
+	p3.locCoords = np.insert(p3.locCoords, 0, np.array([loci, locj, lock]), axis=0) # TODO - careful, there will be > N locations here now
 	p3.popDist = np.insert(p3.popDist, 0, np.array([size, size, size]), axis=0)
 
 	return p2, p3, loci, locb
