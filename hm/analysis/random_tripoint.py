@@ -179,7 +179,7 @@ def mean_r_ib(p, model, r_jk, tilde = False):
 	eps_target = eps_vs_target(p, model, tilde)
 	x = eps_target[0, :]
 	y = eps_target[1,:]
-	step = int(len(y)/60)
+	step = int(len(y)/p.size*10)
 	mean_y = []
 	for i in np.arange(0, len(x), 1):
 		if i >= step:
@@ -192,7 +192,7 @@ def mean_r_jk(p, model, r_jk, tilde = False):
 	eps_neighbours = eps_vs_neighbours(p, model, tilde)
 	x = eps_neighbours[0, :]
 	y = eps_neighbours[1,:]
-	step = int(len(y)/60)
+	step = int(len(y)/p.size)
 	mean_y = []
 	for i in np.arange(0, len(x), 1):
 		if i >= step:
@@ -210,25 +210,36 @@ def r_ib_plot(p, model, r_jk, tilde = False):
 	x = mean_r_ib(p, model, r_jk, tilde = False)[0]
 	mean_y = mean_r_ib(p, model, r_jk, tilde = False)[1]
 	plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
-	plt.plot(x*np.sqrt(p.size), mean_y, '.')
+	plt.plot(x*np.sqrt(p.size), mean_y, '.', 'simulation')
 	plt.xlabel('$\~r_{ib}$')
 	plt.ylabel('$\epsilon$')
 	plt.legend()
 	plt.show()
 
-def plot_ratio(p, model, r_jk, tilde = False):
-	eps_target = eps_vs_target(p, model, tilde)
-	x = eps_target[0, :]
-	y = eps_target[1,:]
-	step = int(len(y)/20)
+def plot_ratio(p, model, r_jk, collapse = False, tilde = False):
 	theory = eps_rib(p, model, r_jk)
-	mean_y = []
-	for i in np.arange(0, len(x), 1):
-		if i < step:
-			mean_y.append(p.size*np.mean(y[i:i+int(step/2)]))
-		if i >= step:
-			mean_y.append(p.size*np.mean(y[i-step:i+step]))
-	#plt.plot(x*np.sqrt(p.size), mean_y/theory, '.')
-	plt.plot(x, mean_y/theory, '.')
+	mean = mean_r_ib(p, model, r_jk)
+	x = mean[0]
+	mean_y = mean[1]
+	if collapse == True:
+		plt.plot(x, mean_y/theory, '.', label = 'N = '+str(p.size))
+		plt.xlabel('$\~r_{ib}} / sqrt(N)} $')
+	else:
+		plt.plot(x*np.sqrt(p.size), mean_y/theory, '.', label = 'N = '+str(p.size))
+		plt.xlabel('$\~r_{ib}$')
 	plt.ylabel('ratio')
-	plt.xlabel('$\~r_{ib}$')
+	plt.legend()
+
+def plot_ratio_rjk(p, model, r_ib, tilde = False, collapse = False):
+	theory = eps_rjk(p, model, r_ib)
+	mean = mean_r_jk(p, model, r_ib)
+	x =  mean[0]
+	mean_y = mean[1]
+	if collapse == True:
+		plt.plot(x, mean_y/theory, '.', label = 'N = '+str(p.size))
+		plt.xlabel('$\~r_{jk}} / sqrt(N)} $')
+	else:
+		plt.plot(x*np.sqrt(p.size), mean_y/theory, '.', label = 'N = '+str(p.size))
+		plt.xlabel('$\~r_{jk}$')
+	plt.ylabel('ratio')
+	plt.legend()

@@ -19,7 +19,7 @@ class pop_distribution:
 		'''
 		closer_pop = []
 		for loc in range(self.size):
-			if disp(self.locCoords[i], self.locCoords[loc]) <= self.r(i, j):
+			if disp(self.locCoords[i], self.locCoords[loc]) < self.r(i, j):
 				if loc != i:
 					if loc != j:
 						closer_pop.append(self.popDist[loc])
