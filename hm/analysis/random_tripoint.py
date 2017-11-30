@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import copy
 from hm.utils.utils import disp
 from sklearn.neighbors import NearestNeighbors
-from scipy.stats import chisquare
 
 def neighbours(p):
 	'''
