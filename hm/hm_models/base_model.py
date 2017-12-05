@@ -20,6 +20,6 @@ class mob_model:
 		for i in range(pop.size):
 			for j in range(i+1,pop.size):
 				f = self.flux(i,j)
-				m[i][j], m[j][i] = f, f # symmetrical
+				m[i][j], m[j][i] = f, f # TODO - this is symmetrical to save computation, not generally true
 
 		return m
