@@ -16,6 +16,8 @@ class pop_distribution:
 		'''
 		Takes the indices of two locations i, j and returns the population in a circle of radius r
 		(r = distance between i and j) centred on i
+
+		TODO - could optimise this
 		'''
 		closer_pop = []
 		for loc in range(self.size):

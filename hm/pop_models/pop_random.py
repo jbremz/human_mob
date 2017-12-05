@@ -9,9 +9,11 @@ class random(pop_distribution):
 
 	'''
 
-	def __init__(self, N, uniformSize=True):
+	def __init__(self, N, uniformSize=True, **kwargs):
 		self.N = N
 		self.uniformSize = uniformSize # uniform population distribution between locations
+		kwargs.setdefault('seed', False)
+		self.seed = kwargs['seed']
 		super().__init__()
 
 	def pop_dist(self):
@@ -29,4 +31,12 @@ class random(pop_distribution):
 		Returns the random 2D population distribution: N locations (0<x<1, 0<y<1)
 
 		'''
-		return np.random.rand(self.N,2)
+		if type(self.seed) is bool:
+			return np.random.rand(self.N,2)
+
+		# for repeatable results
+		else: 
+			np.random.seed(self.seed)
+			return np.random.rand(self.N,2)
+
+		

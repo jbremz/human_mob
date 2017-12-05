@@ -10,16 +10,22 @@ def disp(loci, locj):
 	s = locj - loci
 	return np.sqrt(np.dot(s,s))
 
-def plot_pop(population, **kwargs):
+def plot_pop(population, show=True, **kwargs):
 	'''
 	Takes a population object and plots the locations
 
 	TODO: area proportional to population?
 
 	'''
-
 	coords = population.locCoords
 	plt.scatter(coords[:,0], coords[:,1], s=4)
-	plt.show()
+
+	plt.xlabel(r'$x$')
+	plt.ylabel(r'$y$')
+
+	if show:
+		plt.show()
+
+	return
 
 
