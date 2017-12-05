@@ -57,8 +57,7 @@ def epsilon(mobObj2, mobObj3, ib=True):
 	'''
 
 	if ib: # From i to the satellites
-		mob2Flux = mobObj2.flux(0,1)
-		eps = (mob2Flux - (mobObj3.flux(0,1)+mobObj3.flux(0,2)))/mob2Flux
+		eps = 1 - (mobObj3.flux(0,1)+mobObj3.flux(0,2))/mobObj2.flux(0,1)
 
 	else: # from the satellites to i 
 		mob2Flux = mobObj2.flux(1,0)
