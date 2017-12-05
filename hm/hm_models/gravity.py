@@ -14,10 +14,14 @@ class gravity(mob_model):
 		self.alpha = alpha # population i exponent
 		self.beta = beta # population j exponent
 		self.gamma = gamma # distance exponent
-		self.pop = pop
+		self.pop = pop # population object
 		self.exp = kwargs['exp'] # True if exponential decay function is used, False if power decay is used
 
 	def K(self, i):
+		'''
+		The normalisation constant K
+
+		'''
 		factor = []
 		for j in range(self.pop.size):
 			if j != i:
