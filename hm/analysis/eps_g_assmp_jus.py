@@ -1,10 +1,10 @@
+# Contains functions to justify the assumption that k_ib \approx k_ij (or k_ik) 
+
 from hm.hm_models.gravity import gravity
 from hm.pop_models.pop_random import random as pop_random
 from hm.analysis.explicit_tripoint import *
 import numpy as np
 from matplotlib import pyplot as plt
-
-# Contains functions to justify the assumption that k_ib \approx k_ij (or k_ik) 
 
 def k_ratio(r_ib, r_jk, N, gamma=2, exp=True):
 	'''

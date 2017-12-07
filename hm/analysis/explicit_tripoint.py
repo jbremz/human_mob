@@ -1,3 +1,7 @@
+# Explicit tri-point model
+# Place three locations at explicitly chosen positions amongst a random population distribution and study the fluxes between them in different conditions
+
+
 from hm.pop_models.pop_random import random as pop_random
 from hm.hm_models.gravity import gravity
 from hm.hm_models.radiation import radiation
