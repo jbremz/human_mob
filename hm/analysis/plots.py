@@ -13,8 +13,7 @@ def plot_flow(population, model='all', alpha = 1, beta = 1, gamma = 0.2):
 
 	TODO: pass instance of mob_model as second argument
 	'''
-	if model != 'all':
-		isinstance (model, mob_model)
+
 
 	distance = []
 	flux_gravity = []
@@ -45,10 +44,11 @@ def plot_flow(population, model='all', alpha = 1, beta = 1, gamma = 0.2):
 					flux_opportunities.append(o.flux(i, j))
 
 	plt.loglog(distance, flux_gravity, '.', label = 'gravity')
-	plt.loglog(distance, flux_radiation, '.', label = 'radiation')
-	plt.loglog(distance, flux_opportunities, '.', label = 'opportunities')
+	#plt.loglog(distance, flux_radiation, '.', label = 'radiation')
+	#plt.loglog(distance, flux_opportunities, '.', label = 'opportunities')
 
 	plt.xlabel(r'$ \~r$')
 	plt.ylabel('$p_{ij}$')
 	plt.legend()
 	plt.title('Log-log plot')
+	plt.show()
