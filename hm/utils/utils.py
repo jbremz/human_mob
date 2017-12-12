@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from skimage.util.shape import view_as_windows
 
 def disp(loci, locj):
 	'''
@@ -27,5 +27,14 @@ def plot_pop(population, show=True, **kwargs):
 		plt.show()
 
 	return
+
+def sum4s(m):
+	'''
+	Splits NxN matrix m into 2x2 submatrices (chequerboard) and returns the sum of all elements in each submatrix as an (N/2)x(N/2) matrix  
+
+	'''
+	Lnew = int(len(m)/2)
+	return view_as_windows(m, (2,2),step=2).reshape(int(m.size/4),4).sum(axis=1).reshape(Lnew,Lnew)
+
 
 
