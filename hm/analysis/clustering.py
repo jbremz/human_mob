@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from scipy.cluster import hierarchy as hier
 from scipy.spatial.distance import pdist
 from scipy.cluster.hierarchy import linkage
+from sklearn.neighbors import NearestCentroid
 
 class Clusters:
 	def __init__(self, pop, threshold):
@@ -68,5 +69,18 @@ class Clusters:
 					summed_pop.append(sum(cluster_pop))
 		return np.array(summed_pop)
 	
-	#def clusters_loc(self):
+	def centroids(self):
+		x_c = []
+		y_c = []
+		for i in self.clustered_loc:
+			x = []
+			y = []
+			for loc in i:
+				x.append(self.pop.locCoords[loc][0])
+				y.append(self.pop.locCoords[loc][1])
+			x_c.append(sum(x)/len(x))
+			y_c.append(sum(y)/len(y))
+		xy = np.array([x_c, y_c])
+		xy = np.transpose(xy)
+		return xy
 		
