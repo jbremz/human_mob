@@ -33,7 +33,11 @@ def reduce_matrix(M, clusters):
 
 	return reducedM
 
+def coarse_grain(M, clusters):
+	'''
+	Combines the action of reorder_matrix and reduce_matrix to coarse grain the system according to clusters
 
-	# splitM = [np.split(hBlocks[i], clusterLengths[i]) for i in range(len(clusterLengths))]
+	'''
+	return reduce_matrix(reorder_matrix(M, clusters)[0], clusters)
 
-	# reducedM = [np.sum(x, axis=1) for x in splitM]
+
