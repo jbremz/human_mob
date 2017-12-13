@@ -25,7 +25,7 @@ class gravity(mob_model):
 		factor = []
 		for j in range(self.pop.size):
 			if j != i:
-				factor.append(self.pop.pop_dist()[j]*self.f(self.pop.r(i,j)))
+				factor.append(self.pop.popDist[j]*self.f(self.pop.r(i,j)))
 		return 1./sum(factor)
 
 	def f(self, r):
@@ -38,13 +38,21 @@ class gravity(mob_model):
 		else:
 			return r**(-self.gamma)
 
-	def flux(self, i, j):
+	def flux(self, i, j, probs=True):
 		'''
 		Takes the indices of two locations and returns the flux between them
 		'''
-
 		pop = self.pop
 		popi, popj = pop.popDist[i], pop.popDist[j]
 		r = pop.r(i, j)
-		n = self.K(i) * ((popi**self.alpha)*(popj**self.beta))*self.f(r)
+
+		# Probabilities
+		if probs:
+			n = self.K(i) * popj*self.f(r)
+
+		# Flows
+		if not probs:
+			n = popi * self.K(i) * popj*self.f(r)
+
 		return n
+
