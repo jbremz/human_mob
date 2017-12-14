@@ -65,8 +65,8 @@ class Clusters:
 			for loc in i:
 				cluster_pop.append(self.pop.popDist[loc])
 			for populations in cluster_pop:
-				if sum(cluster_pop) not in summed_pop:
-					summed_pop.append(sum(cluster_pop))
+				#if sum(cluster_pop) not in summed_pop:
+				summed_pop.append(sum(cluster_pop))
 		return np.array(summed_pop)
 	
 	def centroids(self):
