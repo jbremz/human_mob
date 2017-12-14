@@ -16,17 +16,21 @@ class gravity(mob_model):
 		self.gamma = gamma # distance exponent
 		self.pop = pop # population object
 		self.exp = kwargs['exp'] # True if exponential decay function is used, False if power decay is used
-
-	def K(self, i):
+		self.K = self.K()
+		
+	def K(self):
 		'''
 		The normalisation constant K
 
 		'''
-		factor = []
-		for j in range(self.pop.size):
-			if j != i:
-				factor.append(self.pop.popDist[j]*self.f(self.pop.r(i,j)))
-		return 1./sum(factor)
+		k_s = []
+		for i in range(self.pop.size):
+			factor = []
+			for j in range(self.pop.size):
+				if j != i:
+					factor.append(self.pop.popDist[j]*self.f(self.pop.r(i,j)))
+			k_s.append(1./sum(factor))
+		return k_s
 
 	def f(self, r):
 		'''
@@ -48,11 +52,11 @@ class gravity(mob_model):
 
 		# Probabilities
 		if probs:
-			n = self.K(i) * popj*self.f(r)
+			n = self.K[i] * popj*self.f(r)
 
 		# Flows
 		if not probs:
-			n = popi * self.K(i) * popj*self.f(r)
+			n = popi * self.K[i] * popj*self.f(r)
 
 		return n
 
