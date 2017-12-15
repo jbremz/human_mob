@@ -23,4 +23,6 @@ class mob_model:
 					f = self.flux(i,j,probs=probs)
 					m[i][j] = f
 
+		self.ODM_ = m
+
 		return m

@@ -16,10 +16,10 @@ class radiation(mob_model):
 
 		# Probabilities
 		if probs:
-			n = (1/(1-popi/pop.M()))*(popi*popj)/float((popi+popSij)*(popi+popSij+popj))
+			n = (1/(1-popi/pop.M))*(popi*popj)/float((popi+popSij)*(popi+popSij+popj))
 
 		# Flows
 		if not probs:
-			n = (popi/(1-popi/pop.M()))*(popi*popj)/float((popi+popSij)*(popi+popSij+popj)) 
+			n = (popi/(1-popi/pop.M))*(popi*popj)/float((popi+popSij)*(popi+popSij+popj))
 
 		return n

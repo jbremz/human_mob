@@ -1,5 +1,6 @@
 from hm.utils.utils import disp
 import numpy as np
+from scipy.spatial.distance import pdist, squareform
 
 class pop_distribution:
 	'''
@@ -11,22 +12,28 @@ class pop_distribution:
 		self.locCoords = self.loc_dist()
 		self.popDist = self.pop_dist()
 		self.size = len(self.locCoords)
+		self.M = self.M()
+		self.DM = self.distance_matrix()
 
 	def s(self, i, j):
 		'''
 		Takes the indices of two locations i, j and returns the population in a circle of radius r
 		(r = distance between i and j) centred on i
 
-		TODO - could optimise this
 		'''
-		closer_pop = []
-		for loc in range(self.size):
-			if disp(self.locCoords[i], self.locCoords[loc]) < self.r(i, j):
-				if loc != i:
-					if loc != j:
-						closer_pop.append(self.popDist[loc])
+		ds = self.DM[i]
+		r = self.DM[i][j]
 
-		return sum(closer_pop)
+		sijLocs = np.where(ds < r)[0]
+		sijLocs = np.where(sijLocs != i)[0]
+
+		closer_pops = np.take(self.popDist, sijLocs)
+
+		return np.sum(closer_pops)
+
+	def distance_matrix(self):
+
+		return squareform(pdist(self.locCoords))
 
 	def r(self, i, j):
 		'''
