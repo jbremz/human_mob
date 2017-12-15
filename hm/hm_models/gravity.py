@@ -16,7 +16,7 @@ class gravity(mob_model):
 		self.gamma = gamma # distance exponent
 		self.pop = pop # population object
 		self.exp = kwargs['exp'] # True if exponential decay function is used, False if power decay is used
-		self.K = self.K()
+		self.K = self.K() # calulates the K normalisation factors
 		
 	def K(self):
 		'''
