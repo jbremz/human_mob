@@ -1,4 +1,4 @@
-from hm.utils.utils import disp
+# from hm.utils.utils import disp
 import numpy as np
 from .base_model import mob_model
 
@@ -28,8 +28,8 @@ class gravity(mob_model):
 			factor = []
 			for j in range(self.pop.size):
 				if j != i:
-					factor.append(self.pop.popDist[j]*self.f(self.pop.r(i,j)))
-			k_s.append(1./sum(factor))
+					factor.append(self.pop.popDist[j]*self.f(self.pop.DM[i,j]))
+			k_s.append(1./np.sum(factor))
 		return k_s
 
 	def f(self, r):
@@ -48,7 +48,7 @@ class gravity(mob_model):
 		'''
 		pop = self.pop
 		popi, popj = pop.popDist[i], pop.popDist[j]
-		r = pop.r(i, j)
+		r = pop.DM[i, j]
 
 		# Probabilities
 		if probs:

@@ -24,12 +24,9 @@ class pop_distribution:
 		ds = self.DM[i]
 		r = self.DM[i][j]
 
-		sijLocs = np.where(ds < r)[0]
-		sijLocs = np.where(sijLocs != i)[0]
+		closer_pops = np.compress(ds<r, self.popDist)
 
-		closer_pops = np.take(self.popDist, sijLocs)
-
-		return np.sum(closer_pops)
+		return np.sum(closer_pops) - self.popDist[i]
 
 	def distance_matrix(self):
 
