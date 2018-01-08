@@ -72,7 +72,6 @@ class Clusters:
 			x_c.append(sum(x)/len(x))
 			y_c.append(sum(y)/len(y))
 		xy = np.array([x_c, y_c])
-		#xy = np.transpose(xy)
 		return xy
 	
 		
