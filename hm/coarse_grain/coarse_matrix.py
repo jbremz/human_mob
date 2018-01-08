@@ -40,4 +40,16 @@ def coarse_grain(M, clusters):
 	'''
 	return reduce_matrix(reorder_matrix(M, clusters)[0], clusters)
 
+def epsilon_matrix(ODM1, ODM2):
+	'''
+	Returns epsilon for coarse-grained ODM matrices (ODM2 is clustered, ODM1 is combined from constituent fluxes using coarse_grain)
+
+	'''
+
+	eps = (ODM2 - ODM1)/ODM2
+	eps = np.nan_to_num(eps)
+
+	return eps
+
+
 
