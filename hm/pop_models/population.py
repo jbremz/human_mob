@@ -28,8 +28,13 @@ class pop_distribution:
 
 		return np.sum(closer_pops) - self.popDist[i]
 
+	def flat_distance(self):
+		'''Returns the condensed distance matrix as a 1d numpy array.''' 
+		
+		return pdist(self.locCoords)
+	
 	def distance_matrix(self):
-
+		self.flat_DM = self.flat_distance()
 		return squareform(pdist(self.locCoords))
 
 	def r(self, i, j):

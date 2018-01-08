@@ -1,30 +1,21 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.cluster import hierarchy as hier
-from scipy.spatial.distance import pdist
 from scipy.cluster.hierarchy import linkage
-from sklearn.neighbors import NearestCentroid
 
 class Clusters:
 	def __init__(self, pop, threshold):
 		self.pop = pop
 		self.threshold = threshold
-		self.dist_matrix = self.dist_matrix()
 		self.clusters = self.find_clusters() # Hello Jim: USE THIS!
 		self.clusters_num = self.clusters_num(threshold)
 		self.clustered_loc = self.get_clusters()
 		self.clustered_pop = self.merge_population()
 	
-	def dist_matrix(self):
-		'''Returns the condensed distance matrix as a 1d numpy array.''' 
-		pop = self.pop
-		xy = pop.locCoords
-		distance = pdist(xy)
-		return distance
-	
 	def find_clusters(self):
 		'''Returns flat clusters from the hierarchical clustering.'''
-		return hier.fcluster(linkage(self.dist_matrix,method = 'centroid'), self.threshold, criterion = 'distance')
+		flat_DM = self.pop.flat_DM
+		return hier.fcluster(linkage(flat_DM, method = 'centroid'), self.threshold, criterion = 'distance')
 	
 	def viz_clusters(self):
 		'''Plots locations with colors distinguishing clusters.''' 
@@ -81,6 +72,7 @@ class Clusters:
 			x_c.append(sum(x)/len(x))
 			y_c.append(sum(y)/len(y))
 		xy = np.array([x_c, y_c])
-		xy = np.transpose(xy)
+		#xy = np.transpose(xy)
 		return xy
+	
 		
