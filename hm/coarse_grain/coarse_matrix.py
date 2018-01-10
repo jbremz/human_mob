@@ -47,7 +47,8 @@ def epsilon_matrix(ODM1, ODM2):
 	'''
 
 	eps = (ODM2 - ODM1)/ODM2
-	eps = np.nan_to_num(eps)
+	eps[np.isnan(eps)] = 0
+	eps[np.isneginf(eps)] = 0
 
 	return eps
 
