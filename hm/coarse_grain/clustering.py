@@ -52,12 +52,10 @@ class Clusters:
 		'''Returns numpy array with the total population in each cluster.'''
 		summed_pop = []
 		for i in self.clustered_loc:
-			cluster_pop = []
+			cluster_pop = 0
 			for loc in i:
-				cluster_pop.append(self.pop.popDist[loc])
-			for populations in cluster_pop:
-				#if sum(cluster_pop) not in summed_pop:
-				summed_pop.append(sum(cluster_pop))
+				cluster_pop =+ self.pop.popDist[loc]
+			summed_pop.append(cluster_pop)
 		return np.array(summed_pop)
 	
 	def centroids(self):
@@ -67,12 +65,27 @@ class Clusters:
 			x = []
 			y = []
 			for loc in i:
+				x.append(self.pop.locCoords[loc][0])
+				y.append(self.pop.locCoords[loc][1])
+			x_c.append(sum(x)/(len(x)))
+			y_c.append(sum(y)/len(y))
+		xy = np.array([x_c, y_c])
+		return xy		
+	
+	def pw_centroid(self):
+		x_c = []
+		y_c = []
+		index = 0
+		for i in self.clustered_loc:
+			x = []
+			y = []
+			for loc in i:
 				x.append(self.pop.popDist[loc]*self.pop.locCoords[loc][0])
 				y.append(self.pop.popDist[loc]*self.pop.locCoords[loc][1])
-			M = self.pop.M
+			M = self.clustered_pop[index]
+			index += 1
+			print(M)
 			x_c.append(sum(x)/M)
 			y_c.append(sum(y)/M)
 		xy = np.array([x_c, y_c])
-		return xy
-	
-		
+		return xy				
