@@ -67,10 +67,11 @@ class Clusters:
 			x = []
 			y = []
 			for loc in i:
-				x.append(self.pop.locCoords[loc][0])
-				y.append(self.pop.locCoords[loc][1])
-			x_c.append(sum(x)/len(x))
-			y_c.append(sum(y)/len(y))
+				x.append(self.pop.popDist[loc]*self.pop.locCoords[loc][0])
+				y.append(self.pop.popDist[loc]*self.pop.locCoords[loc][1])
+			M = self.pop.M
+			x_c.append(sum(x)/M)
+			y_c.append(sum(y)/M)
 		xy = np.array([x_c, y_c])
 		return xy
 	
