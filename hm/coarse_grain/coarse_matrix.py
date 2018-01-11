@@ -47,7 +47,7 @@ def epsilon_matrix(ODM1, ODM2):
 	'''
 
 	eps = (ODM2 - ODM1)/ODM2
-	eps = np.nan_to_num(eps)
+	#eps = np.nan_to_num(eps)
 
 	return eps
 

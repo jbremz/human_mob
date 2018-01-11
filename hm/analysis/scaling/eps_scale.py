@@ -66,7 +66,7 @@ def reduced_ODM(df, d_max, level, gamma = 0.2):
 
 def epsilon(df, d_max, level, gamma = 0.2):
 	"""Retures the epsilon matrix at a specific level of clustering."""
-	clustered_ODM = gravity_ODM(df, d_max, level, gamma)
 	combined_ODM = reduced_ODM(df, d_max, level, gamma)
-	epsilon = epsilon_matrix(clustered_ODM, combined_ODM)
+	clustered_ODM = gravity_ODM(df, d_max, level, gamma)
+	epsilon = epsilon_matrix(combined_ODM, clustered_ODM)
 	return epsilon
