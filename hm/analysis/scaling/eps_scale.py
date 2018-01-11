@@ -23,18 +23,15 @@ def iterate(df, d_max, level = 1):
 	clusters = Clusters(pop, d_max)
 	levels = [clusters]
 
-	if level==1:
-		return levels
-
-	elif level > 1:
-		for i in range(level-1):
-			xy = clusters.centroids().T
-			m = clusters.clustered_pop
-			pop = pop_explicit(xy, m)
-			d_max = d_max + 2000 # TODO maybe change this to a scaling factor e.g. 2*d_max?
-			clusters = Clusters(pop, d_max)
-			levels.append(clusters)
-		return levels
+	for i in range(level-1):
+		xy = clusters.centroids().T
+		m = clusters.clustered_pop
+		pop = pop_explicit(xy, m)
+		d_max = d_max + 2000 # TODO maybe change this to a scaling factor e.g. 2*d_max?
+		clusters = Clusters(pop, d_max)
+		levels.append(clusters)
+		
+	return levels
 
 def gravity_ODM(df, d_max, level, gamma = 0.2):
 	"""Returns the ODM for the gravity model at a specific level of clustering."""
