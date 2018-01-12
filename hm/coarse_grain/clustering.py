@@ -72,7 +72,7 @@ class Clusters:
 		xy = np.array([x_c, y_c])
 		return xy		
 	
-	def pw_centroid(self):
+	def pw_centroids(self):
 		x_c = []
 		y_c = []
 		index = 0
