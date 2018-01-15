@@ -78,11 +78,17 @@ Provided that $k_{ib} \simeq k_{ij}$, the expression for $\epsilon$ can be reduc
 \end{equation}
 
 From \eqref{eq:7a} and \eqref{eq:7a}, we see that the assumption  $k_{ib} \simeq k_{ij}$ is valid as long as 
-\begin{equation}\label{eq:10}
-\frac{m_b e^{- \gamma r_{ib}}}{m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}} \simeq 1.
+\begin{subequations}
+\begin{equation}\label{eq:10a}
+m_b e^{- \gamma r_{ib}} \ll \sum_{l \neq b}{m_i e^{-\gamma r_{il}}}
 \end{equation}
+and 
+\begin{equation}\label{eq:10b} 
+{m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}} \ll \sum_{l \neq j, k}{m_i e^{-\gamma r_{il}}}.
+\end{equation}
+\end{subequations}
 
-Provided that $r_{ib} \gg r_{jk}$, we can then approximate $r_{ij} \simeq r_{ik} \simeq r_{ib}$. Since we know by definition that $ m_b = m_i + m_j$, we can then assume the approximation in \eqref{eq:10} holds.
+Provided that $N = \sum_{j}{1}$ is sufficiently large, the expressions above hold and we can then assume \eqref{eq:9} is a valid approximation.
 \\
 \par Finally, noting that
 \begin{equation}\label{eq:11}
@@ -99,5 +105,4 @@ The same derivation can be followed for the power law form of the deterrence fun
 \begin{equation}\label{eq:13}
 \epsilon(r_{ib}, r_{jk})_{p} = 1 - \frac{m_j r_{ij}^{-\gamma} + m_k r_{ik}^{-\gamma}}{m_b r_{ib}^{-\gamma}}
 \end{equation}
-
 \end{document}
