@@ -6,6 +6,7 @@ from hm.hm_models.radiation import radiation
 from hm.coarse_grain.coarse_matrix import epsilon_matrix, reorder_matrix
 from hm.coarse_grain.coarse_matrix import coarse_grain as coarse_grain_matrix
 from matplotlib import pyplot as plt
+from hm.analysis.scaling.pop_tools import make_pop
 
 def iterate(df, d_max, level = 1, pw = False):
 	"""Returns a list of Clusters objects with all the levels up to specified level."""
@@ -15,11 +16,7 @@ def iterate(df, d_max, level = 1, pw = False):
 		print("iterate() only accepts clustering levels > 0")
 		return
 
-	x = np.array(df['Easting'])
-	y = np.array(df['Northing'])
-	m = np.array(df['TotPop2011'])
-	xy = np.array([x, y]).T
-	pop = pop_explicit(xy, m)
+	pop = make_pop(df)
 	clusters = Clusters(pop, d_max)
 	levels = [clusters]
 
