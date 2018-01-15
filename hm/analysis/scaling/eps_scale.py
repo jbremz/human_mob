@@ -1,13 +1,13 @@
 import numpy as np 
-import pandas
 from hm.coarse_grain.clustering import Clusters
 from hm.pop_models.pop_explicit import explicit as pop_explicit
 from hm.hm_models.gravity import gravity
 from hm.hm_models.radiation import radiation
 from hm.coarse_grain.coarse_matrix import epsilon_matrix, reorder_matrix
 from hm.coarse_grain.coarse_matrix import coarse_grain as coarse_grain_matrix
+from matplotlib import pyplot as plt
 
-def iterate(df, d_max, level = 1):
+def iterate(df, d_max, level = 1, pw = False):
 	"""Returns a list of Clusters objects with all the levels up to specified level."""
 
 	# Clustering starts at level 1 (level 0 is unclustered)
@@ -24,15 +24,47 @@ def iterate(df, d_max, level = 1):
 	levels = [clusters]
 
 	for i in range(level-1):
-		xy = clusters.centroids().T
-		m = clusters.clustered_pop
-		pop = pop_explicit(xy, m)
+		pop = cluster_population(clusters, pw)
 		d_max = d_max + 2000 # TODO maybe change this to a scaling factor e.g. 2*d_max?
 		clusters = Clusters(pop, d_max)
 		levels.append(clusters)
 		
 	return levels
 
+def viz_levels(df, cluster, pw):
+	if not isinstance(cluster, Clusters):
+		raise NameError("cluster must be a Clusters object")
+	else:
+		x = np.array(df['Easting'])
+		y = np.array(df['Northing'])
+		xy = np.array([x, y]).T
+		if pw == True:
+			plt.plot(cluster.pw_centroids()[0], cluster.pw_centroids()[1], '.')
+		else:
+			plt.plot(cluster.centroids()[0], cluster.centroids()[1], '.')
+		plt.scatter(xy[:,0], xy[:,1], c = cluster.clusters)  
+		plt.show()
+		
+	
+def cluster_population(cluster, pw = False):
+	"""
+	Returns an explicit population distribution.
+	
+	Takes a Clusters object and returns an explicit (pop_distribution) object 
+	which has the PW-centroid of the cluster as location coordinates and the 
+	total population of the cluster as the location population.
+	""" 
+	if not isinstance(cluster, Clusters):
+		raise NameError("cluster must be a Clusters object")
+	else:
+		m = cluster.clustered_pop
+		if pw == True:
+			xy = cluster.pw_centroids().T
+		else:
+			xy = cluster.centroids().T
+		pop = pop_explicit(xy, m)
+	return pop
+	
 def gravity_ODM(df, d_max, level, gamma = 0.2):
 	"""Returns the ODM for the gravity model at a specific level of clustering."""
 	if level == 0:
@@ -43,10 +75,8 @@ def gravity_ODM(df, d_max, level, gamma = 0.2):
 		pop = pop_explicit(xy, m)
 
 	else:
-		clustering = iterate(df, d_max, level = level)
-		m = clustering[-1].clustered_pop
-		xy = clustering[-1].centroids().T
-		pop = pop_explicit(xy, m)
+		clustering = iterate(df, d_max, level = level)[-1]
+		pop = cluster_population(clustering)
 
 	g = gravity(pop, 1, 1, gamma)
 	return g.ODM()
