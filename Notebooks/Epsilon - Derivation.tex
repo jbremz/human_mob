@@ -7,6 +7,7 @@
 \usepackage{url}
 \usepackage{amsmath}
 \usepackage{pgfplots}
+\usepackage{color}
 \usepackage[margin=1in]{geometry}
 \setlength\belowcaptionskip{-0.5cm}
 \captionsetup[figure]{font=small,labelfont=small}
@@ -44,7 +45,7 @@ Substituting \eqref{eq:2} into \eqref{eq:1} gives
 \epsilon = 1 - \left( \frac{k_{ij} m_j}{e^{\gamma r_{ij}}} + \frac{k_{ik} m_k }{e^{\gamma r_{ik}}} \right) \frac{e^{\gamma r_{ib}}}{k_{ib} m_b}
 \end{equation}
 
-We obtain a continuous form of $k_{ib}$ by approximating the sum to an integral. We then use a polar coordinates system with location $k$ on the x-axis and perform an integral over the circular sector between the x-axis and $2\pi - \delta \theta$. Assuming $\delta \theta$ is small enough, this can approximate the area of interest sufficiently well.
+{\color{red} We obtain a continuous form of $k_{ib}$ by approximating the sum to an integral. We then use a polar coordinates system with location $k$ on the x-axis and perform an integral over the circular sector between the x-axis and $2\pi - \delta \theta$. Assuming $\delta \theta$ is small enough, this can approximate the area of interest sufficiently well.
 
 \begin{equation}\label{eq:6}
 \begin{aligned}
@@ -53,43 +54,50 @@ k_{ib}^{-1} &= \int_{A}{e^{-\gamma r_{ib}} dm} \\
 & = \rho \frac{2\pi - \delta \theta}{\gamma^2} \left[e^{-\gamma r_{min}} \left( \gamma r_{min} +1 \right) - e^{-\gamma r_{max}} \left( \gamma r_{max} +1 \right) \right]
 \end{aligned}
 \end{equation}
+[Note: we realised we might not need this form of $k$, since we can find an expression for $\epsilon$ by keeping $k$ and decomposing the sum in the following way:]}
 
-Since $k_{ij} = k_{ik}$, substituting \eqref{eq:6} into \eqref{eq:5} gives
-
-\begin{equation}\label{eq:7}
-\epsilon = 1 - \frac{ m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}}{m_b e^{-\gamma r_{ib}}} 
-\frac{ \left[e^{-\gamma r_{min}} \left( \gamma r_{min} +1 \right) - e^{-\gamma r_{max}} \left( \gamma r_{max} +1 \right) \right] + m_b e^{-\gamma r_{ib}}} { \left[e^{-\gamma r_{min}} \left( \gamma r_{min} +1 \right) - e^{-\gamma r_{max}} \left( \gamma r_{max} +1 \right) \right] + m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}}  
+\begin{subequations}
+\begin{equation}\label{eq:7a}
+k_{ib}^{-1} = \sum_{l \neq b}{m_i e^{-\gamma r_{il}}} + m_b e^{-\gamma r_{ib}}
 \end{equation}
+\begin{equation}\label{eq:7b}
+k_{ij}^{-1} = \sum_{l \neq j, k}{m_i e^{-\gamma r_{il}}} + m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}
+\end{equation}
+\end{subequations}
 
-Provided that $r_{ib} \gg r_{jk}$, then we can approximate $r_{ij} \simeq r_{ik} \simeq r_{ib}$. Given that $ m_b = m_i + m_j$, we can then assume 
+Since $k_{ij} = k_{ik}$, substituting \eqref{eq:7a} and \eqref{eq:7b} into \eqref{eq:5} gives
+
 \begin{equation}\label{eq:8}
-m_b e^{-\gamma r_{ib}} \simeq m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}
+\epsilon = 1 - \frac{ m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}}{m_b e^{-\gamma r_{ib}}} 
+\frac{k_{ib}}{k_{ij}}
 \end{equation}
 
-The expression for $\epsilon$ then simplifies to
+Provided that $k_{ib} \simeq k_{ij}$, the expression for $\epsilon$ can be reduced to
 \begin{equation}\label{eq:9}
-\epsilon \left( r_{ib}, r_{jk} \right)_{e} = 1 - \frac{m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}}{m_b e^{- \gamma r_{ib}}}
+\epsilon = 1 - \frac{m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}}{m_b e^{- \gamma r_{ib}}}
 \end{equation}
 
-Noting that
+From \eqref{eq:7a} and \eqref{eq:7a}, we see that the assumption  $k_{ib} \simeq k_{ij}$ is valid as long as 
 \begin{equation}\label{eq:10}
+\frac{m_b e^{- \gamma r_{ib}}}{m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}} \simeq 1.
+\end{equation}
+
+Provided that $r_{ib} \gg r_{jk}$, we can then approximate $r_{ij} \simeq r_{ik} \simeq r_{ib}$. Since we know by definition that $ m_b = m_i + m_j$, we can then assume the approximation in \eqref{eq:10} holds.
+\\
+\par Finally, noting that
+\begin{equation}\label{eq:11}
 r_{ij} \simeq r_{ik} \simeq \sqrt{r_{ib}^2 + \left(\frac{r_{jk}}{2}\right)^2}
 \end{equation}
 
 \eqref{eq:9} can be rewritten as
-\begin{equation}\label{eq:11}
+\begin{equation}\label{eq:12}
 \epsilon \left( r_{ib}, r_{jk} \right)_{e} = 1 - e^{-\gamma \left( r_{ij} - r_{ib}\right)} 
 \end{equation}
+\\
+The same derivation can be followed for the power law form of the deterrence function $f(r_{ij}) = r_{ij}^{-\gamma}$ to obtain 
 
+\begin{equation}\label{eq:13}
+\epsilon(r_{ib}, r_{jk})_{p} = 1 - \frac{m_j r_{ij}^{-\gamma} + m_k r_{ik}^{-\gamma}}{m_b r_{ib}^{-\gamma}}
+\end{equation}
 
-\begin{tikzpicture}
-\draw [-latex, thick] (0, 0) -- (0, 6) node  [above] {\Large{$y$}};
-\draw [-latex, thick] (0, 0) -- (6, 0) node  [right] {\Large{$x$}};
-\draw[dotted] (0,0)--(4, 0);
-\draw[dotted] (0,0)--(5,3) ;  
-\node at (4, 0) {\textbullet \\ $k$};
-\node at (5, 3) {\textbullet \\ $j$};
-\node at (2.5, 0.5) {$\delta \theta$};
-\draw (2, 0) arc[radius=3cm,start angle=0,end angle=21.3];
-\end{tikzpicture}
 \end{document}
