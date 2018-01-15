@@ -1,0 +1,95 @@
+\documentclass{article}
+\usepackage{cite}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage[hypcap]{caption}
+\usepackage[english]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\usepackage[margin=1in]{geometry}
+\setlength\belowcaptionskip{-0.5cm}
+\captionsetup[figure]{font=small,labelfont=small}
+
+
+\title{Derivation of $\epsilon$}
+\author{Ilaria Manco \& Jim Bremner}
+\date{15/01/18} % delete this line to display the current date
+
+%%% BEGIN DOCUMENT
+\begin{document}
+
+\maketitle
+
+\section{Error Function}
+We derive the analytical form of the error $\epsilon$ 
+\begin{equation}\label{eq:1}
+\epsilon =  \frac{T_{ib} - (T_{ij} + T_{ik})}{T_{ib}}
+\end{equation}
+for the case of the gravity model with an exponential deterrence function:
+\begin{equation}\label{eq:2}
+T_{ij} = k_{ij} m_j f(r_{ij}),
+\end{equation}
+where 
+\begin{equation}\label{eq:3}
+k_{ij}^{-1} = \sum_j{m_j f(r_{ij})}
+\end{equation}
+and
+\begin{equation}\label{eq:4}
+f(r_{ij}) = e^{-\gamma r_{ij}}
+\end{equation}
+
+Substituting \eqref{eq:2} into \eqref{eq:1} gives
+\begin{equation}\label{eq:5}
+\epsilon = 1 - \left( \frac{k_{ij} m_j}{e^{\gamma r_{ij}}} + \frac{k_{ik} m_k }{e^{\gamma r_{ik}}} \right) \frac{e^{\gamma r_{ib}}}{k_{ib} m_b}
+\end{equation}
+
+We obtain a continuous form of $k_{ib}$ by approximating the sum to an integral. We then use a polar coordinates system with location $k$ on the x-axis and perform an integral over the circular sector between the x-axis and $2\pi - \delta \theta$. Assuming $\delta \theta$ is small enough, this can approximate the area of interest sufficiently well.
+
+\begin{equation}\label{eq:6}
+\begin{aligned}
+k_{ib}^{-1} &= \int_{A}{e^{-\gamma r_{ib}} dm} \\
+& = \int_{\theta = 0}^{2\pi - \delta \theta} \int_{r_min}^{r_{max}}{\rho e^{-\gamma r_{ib}} r dr d\theta} \\
+& = \rho \frac{2\pi - \delta \theta}{\gamma^2} \left[e^{-\gamma r_{min}} \left( \gamma r_{min} +1 \right) - e^{-\gamma r_{max}} \left( \gamma r_{max} +1 \right) \right]
+\end{aligned}
+\end{equation}
+
+Since $k_{ij} = k_{ik}$, substituting \eqref{eq:6} into \eqref{eq:5} gives
+
+\begin{equation}\label{eq:7}
+\epsilon = 1 - \frac{ m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}}{m_b e^{-\gamma r_{ib}}} 
+\frac{ \left[e^{-\gamma r_{min}} \left( \gamma r_{min} +1 \right) - e^{-\gamma r_{max}} \left( \gamma r_{max} +1 \right) \right] + m_b e^{-\gamma r_{ib}}} { \left[e^{-\gamma r_{min}} \left( \gamma r_{min} +1 \right) - e^{-\gamma r_{max}} \left( \gamma r_{max} +1 \right) \right] + m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}}  
+\end{equation}
+
+Provided that $r_{ib} \gg r_{jk}$, then we can approximate $r_{ij} \simeq r_{ik} \simeq r_{ib}$. Given that $ m_b = m_i + m_j$, we can then assume 
+\begin{equation}\label{eq:8}
+m_b e^{-\gamma r_{ib}} \simeq m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}
+\end{equation}
+
+The expression for $\epsilon$ then simplifies to
+\begin{equation}\label{eq:9}
+\epsilon \left( r_{ib}, r_{jk} \right)_{e} = 1 - \frac{m_j e^{-\gamma r_{ij}} + m_k e^{-\gamma r_{ik}}}{m_b e^{- \gamma r_{ib}}}
+\end{equation}
+
+Noting that
+\begin{equation}\label{eq:10}
+r_{ij} \simeq r_{ik} \simeq \sqrt{r_{ib}^2 + \left(\frac{r_{jk}}{2}\right)^2}
+\end{equation}
+
+\eqref{eq:9} can be rewritten as
+\begin{equation}\label{eq:11}
+\epsilon \left( r_{ib}, r_{jk} \right)_{e} = 1 - e^{-\gamma \left( r_{ij} - r_{ib}\right)} 
+\end{equation}
+
+
+\begin{tikzpicture}
+\draw [-latex, thick] (0, 0) -- (0, 6) node  [above] {\Large{$y$}};
+\draw [-latex, thick] (0, 0) -- (6, 0) node  [right] {\Large{$x$}};
+\draw[dotted] (0,0)--(4, 0);
+\draw[dotted] (0,0)--(5,3) ;  
+\node at (4, 0) {\textbullet \\ $k$};
+\node at (5, 3) {\textbullet \\ $j$};
+\node at (2.5, 0.5) {$\delta \theta$};
+\draw (2, 0) arc[radius=3cm,start angle=0,end angle=21.3];
+\end{tikzpicture}
+\end{document}
