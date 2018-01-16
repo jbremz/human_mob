@@ -69,6 +69,13 @@ class Clusters:
 			summed_area.append(cluster_area)
 		return np.array(summed_area)
 	
+	def average_area(self):
+		'''Return the average surface area.'''
+		avg = sum(self.clustered_area)/self.clusters_num
+		
+		return avg
+			
+		
 	def centroids(self):
 		x_c = []
 		y_c = []

@@ -10,5 +10,6 @@ def make_pop(df):
 	y = np.array(df['Northing'])
 	m = np.array(df['TotPop2011'])
 	xy = np.array([x, y]).T
-
-	return pop_explicit(xy, m)
+	area = np.array(df['Area'])
+	
+	return pop_explicit(xy, m, area)
