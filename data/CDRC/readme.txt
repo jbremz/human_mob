@@ -1,5 +1,7 @@
 CDRC 2011 Population Weighted Centroids - GB
 
+Access: https://data.cdrc.ac.uk/dataset/cdrc-2011-population-weighted-centroids-gb
+
 
 + Abstract
 The CDRC 2011 Population Weighted Centroids (LSOA/Data Zone) - GB data pack is integral of data from multiple sources which renders population weighted centroids for each LSOA or Data Zone in Great Britain and correspondent population and households. 

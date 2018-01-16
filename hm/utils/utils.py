@@ -36,6 +36,17 @@ def sum4s(m):
 	Lnew = int(len(m)/2)
 	return view_as_windows(m, (2,2),step=2).reshape(int(m.size/4),4).sum(axis=1).reshape(Lnew,Lnew)
 
+def gamma_est(S, exp=False):
+	'''
+	Takes the average population unit area <S> in m^2 and returns an estimate for the gamma exponent as proposed by Lenormand et al. 2012 
+
+	'''
+
+	if exp:
+		return 0.3 * (S/1000000)**(-0.18)
+	else:
+		return 1.4 * (S/1000000)**(0.11) 
+
 
 
 
