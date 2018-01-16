@@ -11,6 +11,7 @@ class Clusters:
 		self.clusters_num = self.clusters_num(threshold)
 		self.clustered_loc = self.get_clusters()
 		self.clustered_pop = self.merge_population()
+		self.clustered_area = self.merge_areas()
 	
 	def find_clusters(self):
 		'''Returns flat clusters from the hierarchical clustering.'''
@@ -58,6 +59,16 @@ class Clusters:
 			summed_pop.append(cluster_pop)
 		return np.array(summed_pop)
 	
+	def merge_areas(self):
+		'''Returns numpy array with the total area covered by each cluster.'''
+		summed_area = []
+		for i in self.clustered_loc:
+			cluster_area = 0
+			for loc in i:
+				cluster_area += self.pop.locArea[loc]
+			summed_area.append(cluster_area)
+		return np.array(summed_area)
+	
 	def centroids(self):
 		x_c = []
 		y_c = []
@@ -83,8 +94,8 @@ class Clusters:
 				x.append(self.pop.popDist[loc]*self.pop.locCoords[loc][0])
 				y.append(self.pop.popDist[loc]*self.pop.locCoords[loc][1])
 			M = self.clustered_pop[index]
-			index += 1
 			x_c.append(sum(x)/M)
 			y_c.append(sum(y)/M)
+			index += 1
 		xy = np.array([x_c, y_c])
 		return xy				

@@ -8,7 +8,7 @@ from hm.coarse_grain.coarse_matrix import coarse_grain as coarse_grain_matrix
 from matplotlib import pyplot as plt
 from hm.analysis.scaling.pop_tools import make_pop
 
-def iterate(df, d_max, level = 1, pw = False):
+def iterate(df, d_max, level = 1):
 	"""Returns a list of Clusters objects with all the levels up to specified level."""
 
 	# Clustering starts at level 1 (level 0 is unclustered)
@@ -21,29 +21,13 @@ def iterate(df, d_max, level = 1, pw = False):
 	levels = [clusters]
 
 	for i in range(level-1):
-		pop = cluster_population(clusters, pw)
 		d_max = d_max + 2000 # TODO maybe change this to a scaling factor e.g. 2*d_max?
 		clusters = Clusters(pop, d_max)
 		levels.append(clusters)
 		
-	return levels
-
-def viz_levels(df, cluster, pw):
-	if not isinstance(cluster, Clusters):
-		raise NameError("cluster must be a Clusters object")
-	else:
-		x = np.array(df['Easting'])
-		y = np.array(df['Northing'])
-		xy = np.array([x, y]).T
-		if pw == True:
-			plt.plot(cluster.pw_centroids()[0], cluster.pw_centroids()[1], '.')
-		else:
-			plt.plot(cluster.centroids()[0], cluster.centroids()[1], '.')
-		plt.scatter(xy[:,0], xy[:,1], c = cluster.clusters)  
-		plt.show()
-		
+	return levels		
 	
-def cluster_population(cluster, pw = False):
+def cluster_population(cluster, pw = True):
 	"""
 	Returns an explicit population distribution.
 	
@@ -61,15 +45,11 @@ def cluster_population(cluster, pw = False):
 			xy = cluster.centroids().T
 		pop = pop_explicit(xy, m)
 	return pop
-	
+
 def gravity_ODM(df, d_max, level, gamma = 0.2):
 	"""Returns the ODM for the gravity model at a specific level of clustering."""
 	if level == 0:
-		x = np.array(df['Easting'])
-		y = np.array(df['Northing'])
-		m = np.array(df['TotPop2011'])
-		xy = np.array([x, y]).T
-		pop = pop_explicit(xy, m)
+		pop = make_pop(df)
 
 	else:
 		clustering = iterate(df, d_max, level = level)[-1]
@@ -99,11 +79,7 @@ def multi_reduced_ODM(df, d_max, level, gamma = 0.2):
 	"""Recursively combines flows at each clustering level and returns the final combined ODM"""
 
 	# Original populations
-	x = np.array(df['Easting'])
-	y = np.array(df['Northing'])
-	m = np.array(df['TotPop2011'])
-	xy = np.array([x, y]).T
-	pop = pop_explicit(xy, m)
+	pop = make_pop(df)
 	original_ODM = gravity(pop, 1, 1, gamma).ODM()
 
 	ODM_init = original_ODM

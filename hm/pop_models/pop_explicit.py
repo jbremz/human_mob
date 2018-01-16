@@ -7,9 +7,10 @@ class explicit(pop_distribution):
 
 	'''
 
-	def __init__(self, locCoords, popDist):
+	def __init__(self, locCoords, popDist, locArea = None):
 		self.locCoords = np.array(locCoords)
 		self.popDist = np.array(popDist)
+		self.area = np.array(locArea)
 		super().__init__()
 
 	def loc_dist(self):
@@ -27,3 +28,10 @@ class explicit(pop_distribution):
 		'''
 
 		return self.popDist
+	
+	def loc_area(self):
+		'''
+		Returns the surface area distribution
+		'''
+		
+		return self.area
