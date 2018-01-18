@@ -44,7 +44,7 @@ def cluster_population(cluster, pw = True):
 	
 	return pop
 
-def gravity_ODM(clusters_list, level, gamma, df = 1):
+def gravity_ODM(clusters_list, level, gamma):
 	"""
 	Returns the ODM for the gravity model at a specific level of clustering.
 	
@@ -52,8 +52,7 @@ def gravity_ODM(clusters_list, level, gamma, df = 1):
 	a population object can be created from it.
 	"""
 	
-	if level == 0:
-		pop = make_pop(df)
+	pop = clusters_list[0].pop
 	
 	if level > 0:
 		clustering = clusters_list[level-1]
@@ -62,19 +61,19 @@ def gravity_ODM(clusters_list, level, gamma, df = 1):
 	g = gravity(pop, 1, 1, gamma)
 	return g.ODM()
 
-def reduced_ODM(clusters_list, level, gamma, df):
+def reduced_ODM(clusters_list, level, gamma):
 	"""Returns ODM for the combined flow between locations."""
 	if level != 0:
-		original_ODM = gravity_ODM(clusters_list, 0, gamma, df)
+		original_ODM = gravity_ODM(clusters_list, 0, gamma)
 		clust = clusters_list[level-1].clusters
 		reduced_ODM = coarse_grain_matrix(original_ODM, clust)
 	else: # not reduced
-		reduced_ODM = gravity_ODM(clusters_list, level, gamma, df)
+		reduced_ODM = gravity_ODM(clusters_list, level, gamma)
 	return reduced_ODM
 
-def epsilon(clusters_list, level, gamma, df):
+def epsilon(clusters_list, level, gamma):
 	"""Returns the epsilon matrix (defined compared to the ODM at the original location resolution) at a specific level of clustering."""
-	clustered_ODM = gravity_ODM(clusters_list, level, gamma, df)
-	combined_ODM = reduced_ODM(clusters_list, level, gamma, df)
+	clustered_ODM = gravity_ODM(clusters_list, level, gamma)
+	combined_ODM = reduced_ODM(clusters_list, level, gamma)
 	epsilon = epsilon_matrix(combined_ODM, clustered_ODM)
 	return epsilon
