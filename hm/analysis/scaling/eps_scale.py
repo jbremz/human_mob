@@ -44,7 +44,7 @@ def cluster_population(cluster, pw = True):
 	
 	return pop
 
-def gravity_ODM(clusters_list, level, gamma, df = 1):
+def gravity_ODM(clusters_list, level, gamma):
 	"""
 	Returns the ODM for the gravity model at a specific level of clustering.
 	
@@ -52,8 +52,7 @@ def gravity_ODM(clusters_list, level, gamma, df = 1):
 	a population object can be created from it.
 	"""
 	
-	if level == 0:
-		pop = make_pop(df)
+	pop = clusters_list[0].pop
 	
 	if level > 0:
 		clustering = clusters_list[level-1]
