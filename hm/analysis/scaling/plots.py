@@ -51,7 +51,8 @@ def eps_distance(eps, DM, N, ib = True, model='gravity'):
 		mask = inds == b
 		e = epsTri[mask]
 		mean_eps.append(np.mean(e))
-		sigma_eps.append(np.std(e)/np.sqrt(len(e)))
+		# sigma_eps.append(np.std(e)/np.sqrt(len(e)))
+		sigma_eps.append(np.std(e))
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
@@ -71,6 +72,12 @@ def eps_distance(eps, DM, N, ib = True, model='gravity'):
 	plt.show()
 
 	return
+
+def eps_distance_hier(epsList, DM_list, N, ib=True, model='gravity'):
+	'''
+	
+
+	'''
 
 
 
