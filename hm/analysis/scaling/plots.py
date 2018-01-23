@@ -95,7 +95,7 @@ def eps_hier(pop_hier_obj):
 
 	return epsList, DMList
 
-def eps_distance_hier(epsList, DMList, N, ib=True, model='gravity'):
+def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	'''
 	Plots epsilon against distances at different levels in the hierarchy
 
@@ -106,7 +106,7 @@ def eps_distance_hier(epsList, DMList, N, ib=True, model='gravity'):
 	if ib:
 		for i in range(len(epsList)):
 			# Only take the upper triangle
-			iu = np.array(np.triu_indices(eps.shape[0]))
+			iu = np.array(np.triu_indices(epsList[i].shape[0]))
 			diag = iu[0] == iu[1]
 			iu = list(iu[:,~diag]) # take out the diagonal
 			epsTri = epsList[i][iu]
@@ -150,7 +150,7 @@ def eps_distance_hier(epsList, DMList, N, ib=True, model='gravity'):
 	ax = fig.add_subplot(111)
 
 	for i in range(len(mean_epss)):
-		ax.errorbar(bins, mean_epss[i], elinewidth=1, fmt='o', ms=4, yerr=sigma_epss[i])
+		ax.errorbar(bins, mean_epss[i], elinewidth=1, fmt='o', ms=4, yerr=sigma_epss[i], label='d_max =' + str(d_maxs[i]))
 
 	# Axes labels & Title
 
