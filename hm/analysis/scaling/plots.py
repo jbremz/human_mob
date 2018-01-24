@@ -124,13 +124,14 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 			epsTris.append(epsTri)
 			DMTris.append(DMTris)
 
-	# bins the data
+	# bins the data by distance
 	xMin, xMax = np.min(DMTris[0]), np.max(DMTris[0]) # choose level 0 to define the bins (this will have the greatest extent in DM)
 	bins = np.linspace(xMin, xMax, N)
 
 	mean_epss = []
 	sigma_epss = []
 
+	# Find mean and std. for each distance bin (across all the clustering levels)
 	for i in range(len(epsList)):
 		inds = np.digitize(DMTris[i], bins) # indices of the distance bins to which each eps value belongs
 		
@@ -146,11 +147,12 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 		mean_epss.append(mean_eps)
 		sigma_epss.append(sigma_eps)
 
-	fig = plt.figure()
+	# Alter figsize here
+	fig = plt.figure(figsize=(11,8))
 	ax = fig.add_subplot(111)
 
 	for i in range(len(mean_epss)):
-		ax.errorbar(bins, mean_epss[i], elinewidth=1, fmt='o', ms=4, yerr=sigma_epss[i], label='d_max =' + str(d_maxs[i]))
+		ax.errorbar(bins, mean_epss[i], elinewidth=1, fmt='o', ms=4, yerr=sigma_epss[i], label=r'$d_{max} = $' + str(d_maxs[i]))
 
 	# Axes labels & Title
 
@@ -164,12 +166,5 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	ax.set_title(r'Mean $\epsilon$ at different levels of clustering (' + flow + ')')
 	ax.legend()
 
-	plt.show()
-
-
-
-
-
-
-
+	return
 
