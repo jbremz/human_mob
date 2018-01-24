@@ -67,8 +67,6 @@ class pop_hier:
 		If level == 0 (no clustering), a dataframe needs to be specified so that 
 		a population object (the original) can be created from it.
 		"""
-		if type(self.original_ODM) == bool:
-			self.original_ODM = self.gravity_ODM(level=0, exp=exp)
 			
 		if level == 0:
 			pop = self.levels[0].pop
@@ -78,10 +76,13 @@ class pop_hier:
 			clustering = self.levels[level-1]
 			pop = self.cluster_population(clustering)
 			S = np.mean(self.levels[level-1].clustered_area) # mean population unit area
-
-		gamma = gamma_est(S, exp=exp) # calculate the gamma exponent with the average population unit area
-		g = gravity(pop, 1, 1, gamma, exp=exp)
-		return g.ODM()
+		
+		if type(self.original_ODM) == bool:
+			gamma = gamma_est(S, exp=exp) # calculate the gamma exponent with the average population unit area
+			g = gravity(pop, 1, 1, gamma, exp=exp)
+			self.original_ODM = self.gravity_ODM(level=0, exp=exp)
+			
+		return self.original_ODM
 
 	def reduced_ODM(self, level, exp=False):
 		"""Returns ODM for the combined flow between locations."""
