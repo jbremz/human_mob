@@ -87,9 +87,9 @@ def eps_hier(pop_hier_obj):
 	h = pop_hier_obj
 
 	epsList = []
-	DMList = []
+	DMList = [h.pop.DM]
 
-	for level in tqdm(range(len(h.levels)+1)):
+	for level in tqdm(range(1, len(h.levels)+1)):
 		epsList.append(h.epsilon(level))
 		DMList.append(h.cluster_population(h.levels[level-1]).DM)
 
