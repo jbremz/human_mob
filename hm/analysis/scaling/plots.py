@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns; sns.set()
-from tqdm import tqdm
+from tqdm import tqdm_notebook as tqdm
 
 def eps_heatmap(M, model='gravity'):
 	'''
