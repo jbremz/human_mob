@@ -95,7 +95,6 @@ class pop_hier:
 			self.original_ODM = self.gravity_ODM(level=0, exp=exp)
 
 		if level != 0:
-			self.original_ODM
 			clust = self.levels[level-1].clusters
 			reduced_ODM = coarse_grain_matrix(self.original_ODM, clust)
 		else: # not reduced
