@@ -128,7 +128,7 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 
 	# bins the data by distance
 	xMin, xMax = np.min(DMTris[0]), np.max(DMTris[0]) # choose level 0 to define the bins (this will have the greatest extent in DM)
-	bins = np.linspace(xMin, xMax, N)
+	bins = np.linspace(xMin, xMax-(xMax-xMin)/N, N) # the final bin edge is a bin-width before the maxmium distance value (so it has > 1 locations in it)
 
 	mean_epss = []
 	sigma_epss = []
@@ -140,7 +140,7 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 		mean_eps = []
 		sigma_eps = []
 
-		for b in np.arange(len(bins)):
+		for b in np.arange(1,len(bins)+1):
 			mask = inds == b
 			e = epsTris[i][mask]
 			mean_eps.append(np.mean(e))
@@ -153,8 +153,14 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	fig = plt.figure(figsize=(11,8))
 	ax = fig.add_subplot(111)
 
+	# remove base level 0 (no clustering) because it's trivial
+	mean_epss = mean_epss[1:]
+	sigma_epss = sigma_epss[1:]
+
 	for i in range(len(mean_epss)):
-		ax.errorbar(bins, mean_epss[i], elinewidth=1, fmt='o', ms=4, yerr=sigma_epss[i], label=r'$d_{max} = $' + str(d_maxs[i]))
+		# labels = [0] + d_maxs # to include the base (no clustering) level
+		labels = d_maxs
+		ax.errorbar(bins, mean_epss[i], elinewidth=1, fmt='o', ms=4, yerr=sigma_epss[i], label=r'$d_{max} = $' + str(labels[i]))
 
 	# Axes labels & Title
 
