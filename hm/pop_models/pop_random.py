@@ -1,5 +1,7 @@
 from hm.pop_models.population import pop_distribution
 import numpy as np
+from scipy.spatial import Voronoi
+
 
 class random(pop_distribution):
 	'''
@@ -15,6 +17,7 @@ class random(pop_distribution):
 		kwargs.setdefault('seed', False)
 		self.seed = kwargs['seed']
 		super().__init__()
+
 
 	def pop_dist(self):
 		'''
@@ -39,4 +42,13 @@ class random(pop_distribution):
 			np.random.seed(self.seed)
 			return np.random.rand(self.N,2)
 
-		
+	def Voronoi(self):
+		vor = Voronoi(self.locCoords)
+		return vor.vertices
+	
+	def loc_area(self):		
+		vertices = self.Voronoi()
+		x = vertices[0]
+		y = vertices[1]
+		area = 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
+		return area

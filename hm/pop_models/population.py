@@ -14,6 +14,8 @@ class pop_distribution:
 		self.size = len(self.locCoords)
 		self.M = self.M()
 		self.DM = self.distance_matrix()
+		self.locArea = self.loc_area() #this function does not give the right 
+									# output for pop_random
 
 	def s(self, i, j):
 		'''
