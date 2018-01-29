@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.cluster import hierarchy as hier
 from scipy.cluster.hierarchy import linkage
+from hm.pop_models.pop_explicit import explicit as pop_explicit
 
 class Clusters:
 	def __init__(self, pop, threshold):
@@ -11,7 +12,8 @@ class Clusters:
 		self.clusters_num = self.clusters_num(threshold)
 		self.clustered_loc = self.get_clusters()
 		self.clustered_pop = self.merge_population()
-		self.clustered_area = self.merge_areas()
+		if isinstance(self.pop, pop_explicit):
+			self.clustered_area = self.merge_areas()
 	
 	def find_clusters(self):
 		'''Returns flat clusters from the hierarchical clustering.'''

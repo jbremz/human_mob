@@ -7,6 +7,8 @@ from hm.coarse_grain.coarse_matrix import epsilon_matrix
 from hm.coarse_grain.coarse_matrix import coarse_grain as coarse_grain_matrix
 from hm.analysis.scaling.pop_tools import make_pop
 from hm.utils.utils import gamma_est
+from hm.pop_models import pop_random
+import pandas
 
 
 class pop_hier:
@@ -19,7 +21,10 @@ class pop_hier:
 
 	def __init__(self, df, d_maxs):
 		self.df = df
-		self.pop = make_pop(df)
+		if isinstance(df, pandas.DataFrame):
+			self.pop = make_pop(df)
+		if isinstance(df, pop_random.random):
+			self.pop = df
 		self.d_maxs = d_maxs
 		self.levels = self.iterate(self.d_maxs) # the list of cluster objects at each level defined in d_maxs
 		self.original_ODM = False # the ODM of Level 0 of the hierarchy (defined once reduced_ODM is called for the first time)
@@ -60,7 +65,7 @@ class pop_hier:
 		
 		return pop
 
-	def gravity_ODM(self, level, exp=False):
+	def gravity_ODM(self, level, gamma=False, exp=False):
 		"""
 		Returns the ODM for the gravity model at a specific level of clustering.
 		
@@ -69,14 +74,17 @@ class pop_hier:
 		"""
 		if level == 0:
 			pop = self.levels[0].pop
-			S = np.mean(self.df['Area']) # mean population unit area
+			if gamma is bool:
+				S = np.mean(self.df['Area']) # mean population unit area
 		
 		else:
 			clustering = self.levels[level-1]
 			pop = self.cluster_population(clustering)
-			S = np.mean(self.levels[level-1].clustered_area) # mean population unit area
-
-		gamma = gamma_est(S, exp=exp) # calculate the gamma exponent with the average population unit area
+			if gamma is bool:
+				S = np.mean(self.levels[level-1].clustered_area) # mean population unit area
+		
+		if gamma is bool:
+			gamma = gamma_est(S, exp=exp) # calculate the gamma exponent with the average population unit area
 		g = gravity(pop, 1, 1, gamma, exp=exp)
 		return g.ODM()
 
