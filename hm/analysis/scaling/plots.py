@@ -83,15 +83,17 @@ def eps_hier(pop_hier_obj):
 	- List of epsilon matrices at each level
 	- List of distance matrices at each level
 
+	To be used with eps_distance_hier()
+
 	'''
 	h = pop_hier_obj
 
 	epsList = []
-	DMList = [h.pop.DM]
+	DMList = []
 
-	for level in tqdm(range(1, len(h.levels)+1)):
+	for level in tqdm(range(len(h.levels)+1)):
 		epsList.append(h.epsilon(level))
-		DMList.append(h.cluster_population(h.levels[level-1]).DM)
+		DMList.append(h.DM_level(level))
 
 	return epsList, DMList
 

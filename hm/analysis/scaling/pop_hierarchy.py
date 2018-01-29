@@ -103,6 +103,17 @@ class pop_hier:
 
 		return reduced_ODM
 
+	def DM_level(self, level):
+		'''
+		Returns the distance matrix at a given level
+
+		'''
+		if level == 0:
+			return self.pop.DM
+
+		if level > 0:
+			return self.cluster_population(self.levels[level-1]).DM
+
 	def epsilon(self, level, model=False, exp=False):
 		"""Returns the epsilon matrix (defined compared to the ODM at the original location resolution) at a specific level of clustering."""
 		
