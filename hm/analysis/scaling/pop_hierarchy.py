@@ -75,12 +75,14 @@ class pop_hier:
 		"""
 		if level == 0:
 			pop = self.levels[0].pop
-			S = np.mean(self.df['Area']) # mean population unit area
+			if type(gamma) == bool: # pass explicit gamma instead of using the area
+				S = np.mean(self.df['Area']) # mean population unit area
 		
 		else:
 			clustering = self.levels[level-1]
 			pop = self.cluster_population(clustering)
-			S = np.mean(self.levels[level-1].clustered_area) # mean population unit area
+			if type(gamma) == bool:
+				S = np.mean(self.levels[level-1].clustered_area) # mean population unit area
 		
 		# So we can pass explicit gamma argument if we'd like
 		if type(gamma) == bool:
@@ -109,13 +111,13 @@ class pop_hier:
 		r = radiation(pop)
 		return r.ODM()
 
-	def reduced_ODM(self, level, model='g', exp=False):
+	def reduced_ODM(self, level, model='g', gamma=False, exp=False):
 		"""Returns ODM for the combined flow between locations."""
 
 		# Give the original ODM for either radiation or gravity if it hasn't already been made
 		if model == 'g':
 			if type(self.original_ODM_g) == bool:
-					self.original_ODM_g = self.gravity_ODM(level=0, exp=exp)
+					self.original_ODM_g = self.gravity_ODM(level=0, exp=exp, gamma=gamma)
 		if model == 'r':
 			if type(self.original_ODM_r) == bool:
 					self.original_ODM_r = self.radiation_ODM(level=0)
@@ -141,18 +143,18 @@ class pop_hier:
 		if level > 0:
 			return self.cluster_population(self.levels[level-1]).DM
 
-	def epsilon(self, level, model='g', exp=False):
+	def epsilon(self, level, model='g', gamma=False, exp=False):
 		"""Returns the epsilon matrix (defined compared to the ODM at the original location resolution) at a specific level of clustering."""
 
 		if level > len(self.d_maxs):
 			print("Object has only been initialised with " + str(len(self.d_maxs)) + " levels")
 			return
 
-		combined_ODM = self.reduced_ODM(level, model=model, exp=exp)
+		combined_ODM = self.reduced_ODM(level, model=model, exp=exp, gamma=gamma)
 
 		# TODO change this so that for level 0 gravity ODM isn't called again
 		if model == 'g':
-			clustered_ODM = self.gravity_ODM(level, exp=exp) 
+			clustered_ODM = self.gravity_ODM(level, exp=exp, gamma=gamma) 
 		if model == 'r':
 			clustered_ODM = self.radiation_ODM(level)
 		elif model != 'g' and model != 'r':
