@@ -148,6 +148,8 @@ class pop_hier:
 			print("Object has only been initialised with " + str(len(self.d_maxs)) + " levels")
 			return
 
+		combined_ODM = self.reduced_ODM(level, model=model, exp=exp)
+
 		# TODO change this so that for level 0 gravity ODM isn't called again
 		if model == 'g':
 			clustered_ODM = self.gravity_ODM(level, exp=exp) 
@@ -157,7 +159,6 @@ class pop_hier:
 			print("Please input 'g':gravity, 'r':radiation")
 			return
 
-		combined_ODM = self.reduced_ODM(level, model=model, exp=exp)
 		epsilon = epsilon_matrix(combined_ODM, clustered_ODM)
 
 		return epsilon

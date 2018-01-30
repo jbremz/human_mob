@@ -96,7 +96,7 @@ def eps_hier(pop_hier_obj, model='g'):
 	epsList = []
 	DMList = []
 
-	for level in tqdm(range(len(h.levels)+1)):
+	for level in tqdm(range(1,len(h.levels)+1)):
 		epsList.append(h.epsilon(level, model=model))
 		DMList.append(h.DM_level(level))
 
