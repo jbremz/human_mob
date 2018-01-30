@@ -74,7 +74,7 @@ def eps_distance(eps, DM, N, ib = True, model='gravity'):
 
 	return
 
-def eps_hier(pop_hier_obj):
+def eps_hier(pop_hier_obj, model='g'):
 	'''
 	Takes a pop_hier object
 
@@ -86,13 +86,18 @@ def eps_hier(pop_hier_obj):
 	To be used with eps_distance_hier()
 
 	'''
+
+	if model != 'g' and model != 'r':
+		print("Please input 'g':gravity, 'r':radiation")
+		return
+		
 	h = pop_hier_obj
 
 	epsList = []
 	DMList = []
 
 	for level in tqdm(range(len(h.levels)+1)):
-		epsList.append(h.epsilon(level))
+		epsList.append(h.epsilon(level, model=model))
 		DMList.append(h.DM_level(level))
 
 	return epsList, DMList

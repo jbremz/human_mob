@@ -27,7 +27,8 @@ class pop_hier:
 			self.pop = df
 		self.d_maxs = d_maxs
 		self.levels = self.iterate(self.d_maxs) # the list of cluster objects at each level defined in d_maxs
-		self.original_ODM = False # the ODM of Level 0 of the hierarchy (defined once reduced_ODM is called for the first time)
+		self.original_ODM_g = False # the ODM of Level 0 of the hierarchy (defined once reduced_ODM is called for the first time)
+		self.original_ODM_r = False
 
 	def iterate(self, d_maxs):
 		"""Returns a list of Clusters objects with all the levels up to specified level."""
@@ -74,31 +75,58 @@ class pop_hier:
 		"""
 		if level == 0:
 			pop = self.levels[0].pop
-			if gamma is bool:
-				S = np.mean(self.df['Area']) # mean population unit area
+			S = np.mean(self.df['Area']) # mean population unit area
 		
 		else:
 			clustering = self.levels[level-1]
 			pop = self.cluster_population(clustering)
-			if gamma is bool:
-				S = np.mean(self.levels[level-1].clustered_area) # mean population unit area
+			S = np.mean(self.levels[level-1].clustered_area) # mean population unit area
 		
-		if gamma is bool:
-			gamma = gamma_est(S, exp=exp) # calculate the gamma exponent with the average population unit area
-		g = gravity(pop, 1, 1, gamma, exp=exp)
+		# So we can pass explicit gamma argument if we'd like
+		if type(gamma) == bool:
+			gam = gamma_est(S, exp=exp) # calculate the gamma exponent with the average population unit area
+		else:
+			gam = gamma
+
+		g = gravity(pop, 1, 1, gam, exp=exp)
+
 		return g.ODM()
 
-	def reduced_ODM(self, level, exp=False):
+	def radiation_ODM(self, level):
+		'''
+		Returns the ODM for the radiation model at a specific level of clustering.
+		
+		If level == 0 (no clustering), a dataframe needs to be specified so that 
+		a population object (the original) can be created from it.	
+		'''
+		if level == 0:
+			pop = self.levels[0].pop
+
+		else:
+			clustering = self.levels[level-1]
+			pop = self.cluster_population(clustering)
+
+		r = radiation(pop)
+		return r.ODM()
+
+	def reduced_ODM(self, level, model='g', exp=False):
 		"""Returns ODM for the combined flow between locations."""
 
-		if type(self.original_ODM) == bool:
-			self.original_ODM = self.gravity_ODM(level=0, exp=exp)
+		# Give the original ODM for either radiation or gravity if it hasn't already been made
+		if model == 'g':
+			if type(self.original_ODM_g) == bool:
+					self.original_ODM_g = self.gravity_ODM(level=0, exp=exp)
+		if model == 'r':
+			if type(self.original_ODM_r) == bool:
+					self.original_ODM_r = self.radiation_ODM(level=0)
+
+		original_ODMs = {'g':self.original_ODM_g, 'r':self.original_ODM_r} # to select the correct ODM
 
 		if level != 0:
 			clust = self.levels[level-1].clusters
-			reduced_ODM = coarse_grain_matrix(self.original_ODM, clust)
+			reduced_ODM = coarse_grain_matrix(original_ODMs[model], clust)
 		else: # not reduced
-			reduced_ODM = self.original_ODM
+			reduced_ODM = original_ODMs[model]
 
 		return reduced_ODM
 
@@ -113,18 +141,23 @@ class pop_hier:
 		if level > 0:
 			return self.cluster_population(self.levels[level-1]).DM
 
-	def epsilon(self, level, model=False, exp=False):
+	def epsilon(self, level, model='g', exp=False):
 		"""Returns the epsilon matrix (defined compared to the ODM at the original location resolution) at a specific level of clustering."""
-		
-		if type(model) is not bool:
-			print("We've only included gravity model so far, sorry x")
 
 		if level > len(self.d_maxs):
 			print("Object has only been initialised with " + str(len(self.d_maxs)) + " levels")
 			return
 
-		clustered_ODM = self.gravity_ODM(level, exp=exp)
-		combined_ODM = self.reduced_ODM(level, exp=exp)
+		# TODO change this so that for level 0 gravity ODM isn't called again
+		if model == 'g':
+			clustered_ODM = self.gravity_ODM(level, exp=exp) 
+		if model == 'r':
+			clustered_ODM = self.radiation_ODM(level)
+		elif model != 'g' and model != 'r':
+			print("Please input 'g':gravity, 'r':radiation")
+			return
+
+		combined_ODM = self.reduced_ODM(level, model=model, exp=exp)
 		epsilon = epsilon_matrix(combined_ODM, clustered_ODM)
 
 		return epsilon
