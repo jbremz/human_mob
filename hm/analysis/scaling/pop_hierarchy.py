@@ -76,7 +76,7 @@ class pop_hier:
 		if level == 0:
 			pop = self.levels[0].pop
 			if type(gamma) == bool: # pass explicit gamma instead of using the area
-				S = np.mean(self.df['Area']) # mean population unit area
+				S = np.mean(self.pop.locArea) # mean population unit area
 		
 		else:
 			clustering = self.levels[level-1]
