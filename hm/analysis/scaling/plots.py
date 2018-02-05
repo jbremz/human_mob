@@ -96,7 +96,7 @@ def eps_hier(pop_hier_obj, model='g', gamma=False):
 	epsList = []
 	DMList = []
 
-	for level in tqdm(range(1,len(h.levels)+1)):
+	for level in tqdm(range(1,len(h.levels)+1)): # only go from level 1
 		epsList.append(h.epsilon(level, model=model, gamma=gamma))
 		DMList.append(h.DM_level(level))
 
@@ -157,10 +157,6 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	# Alter figsize here
 	fig = plt.figure(figsize=(11,8))
 	ax = fig.add_subplot(111)
-
-	# remove base level 0 (no clustering) because it's trivial
-	mean_epss = mean_epss[1:]
-	sigma_epss = sigma_epss[1:]
 
 	for i in range(len(mean_epss)):
 		# labels = [0] + d_maxs # to include the base (no clustering) level
