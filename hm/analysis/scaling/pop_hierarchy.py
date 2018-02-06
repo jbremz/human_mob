@@ -165,5 +165,15 @@ class pop_hier:
 
 		return epsilon
 
-
+	def epsilon_to_opt(self, level, gamma_0, gamma, exp = False):
+		if level > len(self.d_maxs):
+			print("Object has only been initialised with " + str(len(self.d_maxs)) + " levels")
+			return
+		#fix gamma of level 0
+		combined_ODM = self.reduced_ODM(level, model='g', gamma=gamma_0, exp=exp)
+		clustered_ODM = self.gravity_ODM(level, gamma=gamma, exp=exp) 
+		
+		epsilon = epsilon_matrix(combined_ODM, clustered_ODM)
+		
+		return epsilon
 

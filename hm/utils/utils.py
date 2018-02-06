@@ -46,10 +46,3 @@ def gamma_est(S, exp=False):
 		return 0.3 * (S/1000000)**(-0.18)
 	else:
 		return 1.4 * (S/1000000)**(0.11) 
-
-
-
-
-
-
-

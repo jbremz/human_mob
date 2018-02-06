@@ -13,7 +13,8 @@ class Clusters:
 		self.clusters_num = self.clusters_num(threshold)
 		self.clustered_loc = self.get_clusters()
 		self.clustered_pop = self.merge_population()
-		if isinstance(self.pop, pop_explicit) or isinstance(self.pop, pop_random):
+		#if isinstance(self.pop, pop_explicit) or isinstance(self.pop, pop_random):
+		if isinstance(self.pop, pop_explicit):
 			self.clustered_area = self.merge_areas()
 	
 	def find_clusters(self):
