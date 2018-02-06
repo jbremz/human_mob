@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns; sns.set()
 from tqdm import tqdm_notebook as tqdm
+import scipy as sp
 
 def eps_heatmap(M, model='gravity'):
 	'''
@@ -176,4 +177,53 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	ax.legend()
 
 	return
+
+def gamma_S(hier, gamma_0, gamma_opts):
+	'''
+	Plots gamma against unit area given a pop_hier object and the optimised gammas
+
+	'''
+	S = [np.mean(hier.pop.locArea)] # level 0
+	gammas = [gamma_0] + gamma_opts
+
+	for level in hier.levels:
+		S.append(np.mean(level.clustered_area))
+
+	x = np.log(S)
+
+	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, gammas)
+
+	fig = plt.figure(figsize=(11,8))
+	ax = fig.add_subplot(111)
+
+	gam_fit = slope*x + intercept
+
+	ax.scatter(x,gammas)
+	ax.plot(x, gam_fit, 'r', linewidth=0.5)
+
+	ax.set_xlabel(r'log(<S>)', fontsize=15)
+	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=15)
+	ax.set_title(r'$\gamma_{opt}$ against the natural logarithm of mean population unit area, exponent $=$' + str(slope) + r'$\pm$' + str(std_err))
+
+	plt.show()
+
+	return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

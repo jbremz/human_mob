@@ -3,8 +3,8 @@ from hm.analysis.scaling.pop_hierarchy import pop_hier
 from scipy.optimize import minimize_scalar
 
 def optimise_eps(hier, level, gamma_0):
-	if not isinstance(hier, pop_hier):
-		raise NameError("hier must be an object of the pop_hier class!")
+	# if not isinstance(hier, pop_hier):
+	# 	raise NameError("hier must be an object of the pop_hier class!")
 	
 	def mean(gamma):
 		return mean_eps(hier, level, gamma_0, gamma)
