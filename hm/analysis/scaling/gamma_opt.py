@@ -9,8 +9,9 @@ def optimise_eps(hier, level, gamma_0):
 	def mean(gamma):
 		return mean_eps(hier, level, gamma_0, gamma)
 	
-	opt = minimize_scalar(mean, bounds=(gamma_0-3, gamma_0+3), tol = 0.001)
-		
+	#array = np.array([mean(gamma_0), mean(gamma_0+1)])
+	opt = minimize_scalar(mean, bounds=(gamma_0-3, gamma_0+3))
+	
 	return opt
 		
 def mean_eps(hier, level, gamma_0, gamma):

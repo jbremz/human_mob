@@ -190,20 +190,48 @@ def gamma_S(hier, gamma_0, gamma_opts):
 		S.append(np.mean(level.clustered_area))
 
 	x = np.log(S)
+	y = np.log(gammas)
 
-	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, gammas)
+	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
 
 	fig = plt.figure(figsize=(11,8))
 	ax = fig.add_subplot(111)
 
 	gam_fit = slope*x + intercept
 
-	ax.scatter(x,gammas)
+	ax.scatter(x,y)
 	ax.plot(x, gam_fit, 'r', linewidth=0.5)
 
-	ax.set_xlabel(r'log(<S>)', fontsize=15)
-	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=15)
+	ax.set_xlabel(r'$\log(<S>)$', fontsize=15)
+	ax.set_ylabel(r'$\log(\gamma_{opt})$', fontsize=15)
 	ax.set_title(r'$\gamma_{opt}$ against the natural logarithm of mean population unit area, exponent $=$' + str(slope) + r'$\pm$' + str(std_err))
+
+	plt.show()
+
+	return
+
+def gamma_d(d_maxs, gamma_0, gamma_opts):
+	'''
+	Plots gamma against unit area
+
+	'''
+
+	x = np.array(d_maxs) # add the value for no clustering i.e. d_max = 0 
+	y = np.array(gamma_opts)
+
+	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
+
+	fig = plt.figure(figsize=(11,8))
+	ax = fig.add_subplot(111)
+
+	gam_fit = slope*x + intercept
+
+	ax.scatter(x,y)
+	ax.plot(x, gam_fit, 'r', linewidth=0.5)
+
+	ax.set_xlabel(r'$d_{max}$', fontsize=15)
+	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=15)
+	ax.set_title(r'$\gamma_{opt}$ against maximimum clustering distance (d$_{max}$), gradient $=$' + str(slope) + r'$\pm$' + str(std_err))
 
 	plt.show()
 
