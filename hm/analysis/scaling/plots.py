@@ -210,7 +210,7 @@ def gamma_S(hier, gamma_0, gamma_opts):
 
 	return
 
-def gamma_dmax(d_maxs, gamma_0, gamma_opts):
+def gamma_dmax(d_maxs, gamma_opts):
 	'''
 	Plots gamma against unit area
 
@@ -238,13 +238,22 @@ def gamma_dmax(d_maxs, gamma_0, gamma_opts):
 	return
 
 
-def gamma_d(d_maxs, gamma_0, gamma_opts):
+def gamma_d(hier, gamma_opts):
 	'''
 	Plots gamma against unit area
 
 	'''
+	ds = [] # average separation 
 
-	x = np.array(d_maxs) # add the value for no clustering i.e. d_max = 0 
+	for level in hier.levels:
+		DM = hier.DM_level(level)
+		iu = np.array(np.triu_indices(DM.shape[0]))
+		diag = iu[0] == iu[1]
+		iu = list(iu[:,~diag])
+		DM = DM[iu]
+		ds.append(np.mean(DM))
+
+	x = np.array(ds)
 	y = np.array(gamma_opts)
 
 	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
