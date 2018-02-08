@@ -210,7 +210,7 @@ def gamma_S(hier, gamma_0, gamma_opts):
 
 	return
 
-def gamma_d(d_maxs, gamma_0, gamma_opts):
+def gamma_dmax(d_maxs, gamma_0, gamma_opts):
 	'''
 	Plots gamma against unit area
 
@@ -237,6 +237,33 @@ def gamma_d(d_maxs, gamma_0, gamma_opts):
 
 	return
 
+
+def gamma_d(d_maxs, gamma_0, gamma_opts):
+	'''
+	Plots gamma against unit area
+
+	'''
+
+	x = np.array(d_maxs) # add the value for no clustering i.e. d_max = 0 
+	y = np.array(gamma_opts)
+
+	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
+
+	fig = plt.figure(figsize=(11,8))
+	ax = fig.add_subplot(111)
+
+	gam_fit = slope*x + intercept
+
+	ax.scatter(x,y)
+	ax.plot(x, gam_fit, 'r', linewidth=0.5)
+
+	ax.set_xlabel(r'$d_{max}$', fontsize=15)
+	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=15)
+	ax.set_title(r'$\gamma_{opt}$ against maximimum clustering distance (d$_{max}$), gradient $=$' + str(slope) + r'$\pm$' + str(std_err))
+
+	plt.show()
+
+	return
 
 
 
