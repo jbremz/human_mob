@@ -75,7 +75,7 @@ def eps_distance(eps, DM, N, ib = True, model='gravity'):
 
 	return
 
-def eps_hier(pop_hier_obj, model='g', gamma=False):
+def eps_hier(pop_hier_obj, model='g', gamma=False): #can remove the DMList part in this function
 	'''
 	Takes a pop_hier object
 
@@ -103,6 +103,25 @@ def eps_hier(pop_hier_obj, model='g', gamma=False):
 
 	return epsList, DMList
 
+def DM_list(pop_hier_obj):
+	'''
+	Takes a pop_hier object
+
+	Returns:
+
+		- List of distance matrices at each level
+	'''
+	h = pop_hier_obj
+
+	DMList = []
+
+	for level in tqdm(range(1,len(h.levels)+1)): # only go from level 1
+		DMList.append(h.DM_level(level))
+
+	return DMList
+	
+	
+	
 def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	'''
 	Plots epsilon against distances at different levels in the hierarchy
