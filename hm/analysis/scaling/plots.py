@@ -212,7 +212,7 @@ def gamma_S(hier, gamma_0, gamma_opts):
 
 def gamma_dmax(d_maxs, gamma_opts):
 	'''
-	Plots gamma against unit area
+	Plots gamma against maximum cluster separation
 
 	'''
 
@@ -229,7 +229,7 @@ def gamma_dmax(d_maxs, gamma_opts):
 	ax.scatter(x,y)
 	ax.plot(x, gam_fit, 'r', linewidth=0.5)
 
-	ax.set_xlabel(r'$d_{max}$', fontsize=15)
+	ax.set_xlabel(r'$d_{max}$ (m)', fontsize=15)
 	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=15)
 	ax.set_title(r'$\gamma_{opt}$ against maximimum clustering distance (d$_{max}$), gradient $=$' + str(slope) + r'$\pm$' + str(std_err))
 
@@ -245,7 +245,7 @@ def gamma_d(hier, gamma_opts):
 	'''
 	ds = [] # average separation 
 
-	for level in hier.levels:
+	for level in range(1, len(hier.levels)+1):
 		DM = hier.DM_level(level)
 		iu = np.array(np.triu_indices(DM.shape[0]))
 		diag = iu[0] == iu[1]
@@ -255,6 +255,9 @@ def gamma_d(hier, gamma_opts):
 
 	x = np.array(ds)
 	y = np.array(gamma_opts)
+
+	# x = np.log(x)
+	# y = np.log(y)
 
 	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
 
@@ -266,9 +269,9 @@ def gamma_d(hier, gamma_opts):
 	ax.scatter(x,y)
 	ax.plot(x, gam_fit, 'r', linewidth=0.5)
 
-	ax.set_xlabel(r'$d_{max}$', fontsize=15)
+	ax.set_xlabel(r'Mean Location Separation (m)', fontsize=15)
 	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=15)
-	ax.set_title(r'$\gamma_{opt}$ against maximimum clustering distance (d$_{max}$), gradient $=$' + str(slope) + r'$\pm$' + str(std_err))
+	ax.set_title(r'$\gamma_{opt}$ against Mean Location Separation, gradient $=$' + str(slope) + r'$\pm$' + str(std_err))
 
 	plt.show()
 
