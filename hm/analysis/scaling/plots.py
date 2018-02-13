@@ -293,6 +293,13 @@ def gamma_d(hier, gamma_opts):
 
 	return
 
+def gamma_pop(hier, gamma_opts):
+	'''
+	Plots gamma against population mass product between the locations
+
+	'''
+	
+
 
 
 
