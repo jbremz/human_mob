@@ -82,7 +82,6 @@ def eps_hier(pop_hier_obj, model='g', gamma=False): #can remove the DMList part 
 	Returns:
 
 	- List of epsilon matrices at each level
-	- List of distance matrices at each level
 
 	To be used with eps_distance_hier()
 
@@ -95,13 +94,11 @@ def eps_hier(pop_hier_obj, model='g', gamma=False): #can remove the DMList part 
 	h = pop_hier_obj
 
 	epsList = []
-	DMList = []
 
 	for level in tqdm(range(1,len(h.levels)+1)): # only go from level 1
 		epsList.append(h.epsilon(level, model=model, gamma=gamma))
-		DMList.append(h.DM_level(level))
 
-	return epsList, DMList
+	return epsList
 
 def DM_list(pop_hier_obj):
 	'''
