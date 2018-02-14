@@ -75,7 +75,7 @@ def eps_distance(eps, DM, N, ib = True, model='gravity'):
 
 	return
 
-def eps_hier(pop_hier_obj, model='g', gamma=False): #can remove the DMList part in this function
+def eps_hier(pop_hier_obj, model='g', gamma=False, exp=False): 
 	'''
 	Takes a pop_hier object
 
@@ -96,7 +96,7 @@ def eps_hier(pop_hier_obj, model='g', gamma=False): #can remove the DMList part 
 	epsList = []
 
 	for level in tqdm(range(1,len(h.levels)+1)): # only go from level 1
-		epsList.append(h.epsilon(level, model=model, gamma=gamma))
+		epsList.append(h.epsilon(level, model=model, gamma=gamma, exp=exp))
 
 	return epsList
 
