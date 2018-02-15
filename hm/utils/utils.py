@@ -43,6 +43,6 @@ def gamma_est(S, exp=False):
 	'''
 
 	if exp:
-		return 0.3 * (S/1000000)**(-0.18)
+		return 0.3 * (S/1000000)**(-0.18) / 1000 # divide by 1000 to account for the change in distance units
 	else:
 		return 1.4 * (S/1000000)**(0.11) 
