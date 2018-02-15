@@ -92,8 +92,7 @@ class pop_hier:
 
 		g = gravity(pop, 1, 1, gam, exp=exp)
 
-		return g
-		# return g.ODM()
+		return g.ODM()
 
 	def radiation_ODM(self, level):
 		'''
