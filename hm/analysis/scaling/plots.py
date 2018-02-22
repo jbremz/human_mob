@@ -178,7 +178,7 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	for i in range(len(mean_epss)):
 		# labels = [0] + d_maxs # to include the base (no clustering) level
 		labels = d_maxs
-		ax.errorbar(bins, mean_epss[i], elinewidth=1, fmt='o', ms=4, yerr=sigma_epss[i], label=r'$d_{max} = $' + str(labels[i]))
+		ax.errorbar(bins, mean_epss[i], elinewidth=1, fmt='o', ms=4, yerr=sigma_epss[i], label=r'$d_{max} = $' + str(labels[i]) + 'm')
 
 	# Axes labels & Title
 
@@ -187,10 +187,11 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	else:
 		flow = 'backwards-flow'
 
-	ax.set_xlabel(r'Distance (m)', fontsize=15)
-	ax.set_ylabel(r'$<\epsilon>$', fontsize=15)
-	ax.set_title(r'Mean $\epsilon$ at different levels of clustering (' + flow + ')')
-	ax.legend()
+	ax.set_xlabel(r'Distance (m)', fontsize=25, labelpad=20)
+	ax.set_ylabel(r'$<\epsilon>$', fontsize=25)
+	# ax.set_title(r'Mean $\epsilon$ at different levels of clustering (' + flow + ')')
+	ax.legend(fontsize=15)
+	ax.tick_params(labelsize=15)
 
 	return
 
