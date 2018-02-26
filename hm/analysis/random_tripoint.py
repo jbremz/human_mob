@@ -61,6 +61,7 @@ def epsilon(p, i, model, tilde = False):
 			# move j to midpoint
 			p2.locCoords[j][0] = 0.5*(p2.locCoords[j][0]+ p2.locCoords[k][0])
 			p2.locCoords[j][1] = 0.5*(p2.locCoords[j][1]+ p2.locCoords[k][1])
+			p2.DM = p2.distance_matrix()
 
 			p2.popDist[k] = 0. #remove k
 			b = j #rename j
@@ -210,7 +211,7 @@ def r_ib_plot(p, model, r_jk, tilde = False):
 	x = mean_r_ib(p, model, r_jk, tilde = False)[0]
 	mean_y = mean_r_ib(p, model, r_jk, tilde = False)[1]
 	plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
-	plt.plot(x*np.sqrt(p.size), mean_y, '.', 'simulation')
+	plt.plot(x*np.sqrt(p.size), mean_y, '.', label = 'simulation')
 	plt.xlabel('$\~r_{ib}$')
 	plt.ylabel('$\epsilon$')
 	plt.legend()
