@@ -98,8 +98,7 @@ def epsilon_g(x,y,N, size=1., ib=True, exp=True, seed=False, tildeM=2, gamma=20)
 
 	eps = epsilon(g2, g3, ib=ib)
 
-	# return eps
-	return g2, g3
+	return eps
 
 
 def epsilon_r(x,y,N, size=1., ib=True, seed=False, tildeM=False):
@@ -337,7 +336,7 @@ def plotLocs(N, seed, xmin, xmax, ymin, ymax, show=True):
 
 	return
 
-def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=True, tildeM=False):
+def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=True, tildeM=2):
 	'''
 	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations for gravity model.
 
@@ -371,7 +370,7 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	plt.show()
 
-	return yEps
+	return
 
 def epsChangeY_r(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False):
 	'''
@@ -546,7 +545,7 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	plt.show()
 
-	return xEps
+	return
 
 def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 	'''

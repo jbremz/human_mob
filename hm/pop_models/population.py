@@ -12,7 +12,7 @@ class pop_distribution:
 		self.locCoords = self.loc_dist()
 		self.popDist = self.pop_dist()
 		self.size = len(self.locCoords)
-		# self.M = self.M_()
+		self.M = self.M_()
 		self.DM = self.distance_matrix()
 		self.locArea = self.loc_area() #this function does not give the right 
 									# output for pop_random
