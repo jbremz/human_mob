@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import copy
 from scipy.stats import chisquare
+from tqdm import tqdm_notebook as tqdm
 
 
 
@@ -61,11 +62,11 @@ def epsilon(mobObj2, mobObj3, ib=True):
 	'''
 
 	if ib: # From i to the satellites
-		eps = 1 - (mobObj3.flux(0,1)+mobObj3.flux(0,2))/mobObj2.flux(0,1)
+		eps = 1 - (mobObj3.flux(0,1, probs=False)+mobObj3.flux(0,2))/mobObj2.flux(0,1, probs=False)
 
 	else: # from the satellites to i 
 		mob2Flux = mobObj2.flux(1,0)
-		eps = (mob2Flux - (mobObj3.flux(1,0)+mobObj3.flux(2,0)))/mob2Flux
+		eps = (mob2Flux - (mobObj3.flux(1,0, probs=False)+mobObj3.flux(2,0,probs=False)))/mob2Flux
 
 	return eps
 
@@ -86,12 +87,13 @@ def epsilon_g(x,y,N, size=1., ib=True, exp=True, seed=False, tildeM=2, gamma=20)
 	# Insert locations into two-point
 	p2.popDist = np.insert(p2.popDist, 0, np.array([size, tildeM]), axis=0)
 	p2.locCoords = np.insert(p2.locCoords, 0, np.array([loci, locb]), axis=0)
-
+	
 	g2 = gravity(p2, 1, 1, gamma, exp=exp)
-
+	
 	eps = epsilon(g2, g3, ib=ib)
 
 	return eps
+	# return g2, g3
 
 
 def epsilon_r(x,y,N, size=1., ib=True, seed=False, tildeM=False):
@@ -338,7 +340,7 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	epsVals = []
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
-	for val in y:
+	for val in tqdm(y):
 		epsVals.append(abs(epsilon_g(x, val, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)))
 
 	yEps = np.array([y * np.sqrt(N), np.array(epsVals)]).T
@@ -363,7 +365,7 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	plt.show()
 
-	return
+	return yEps
 
 def epsChangeY_r(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False):
 	'''
@@ -538,7 +540,7 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	plt.show()
 
-	return
+	return xEps
 
 def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 	'''
