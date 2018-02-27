@@ -42,6 +42,9 @@ def createPops(x,y,N,size,seed):
 	p3.locCoords = np.insert(p3.locCoords, 0, np.array([loci, locj, lock]), axis=0) # TODO - careful, there will be > N locations here now
 	p3.popDist = np.insert(p3.popDist, 0, np.array([size, size, size]), axis=0)
 
+	# re-initialise parameters
+	p3.DM, p3.size = p3.distance_matrix(), len(p3.locCoords)
+
 	return p2, p3, loci, locb
 
 def tilde_m(size, mobObj):
@@ -87,13 +90,15 @@ def epsilon_g(x,y,N, size=1., ib=True, exp=True, seed=False, tildeM=2, gamma=20)
 	# Insert locations into two-point
 	p2.popDist = np.insert(p2.popDist, 0, np.array([size, tildeM]), axis=0)
 	p2.locCoords = np.insert(p2.locCoords, 0, np.array([loci, locb]), axis=0)
-	
+
+	# re-initialise parameters
+	p2.DM, p2.size = p2.distance_matrix(), len(p2.locCoords)
+
 	g2 = gravity(p2, 1, 1, gamma, exp=exp)
-	
+
 	eps = epsilon(g2, g3, ib=ib)
 
 	return eps
-	# return g2, g3
 
 
 def epsilon_r(x,y,N, size=1., ib=True, seed=False, tildeM=False):
@@ -331,7 +336,7 @@ def plotLocs(N, seed, xmin, xmax, ymin, ymax, show=True):
 
 	return
 
-def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=True, tildeM=False):
+def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=True, tildeM=2):
 	'''
 	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations for gravity model.
 
@@ -365,7 +370,7 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	plt.show()
 
-	return yEps
+	return
 
 def epsChangeY_r(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False):
 	'''
@@ -540,7 +545,7 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	plt.show()
 
-	return xEps
+	return
 
 def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 	'''
