@@ -4,6 +4,13 @@ import seaborn as sns; sns.set()
 from tqdm import tqdm_notebook as tqdm
 import scipy as sp
 
+plt.rcParams.update(plt.rcParamsDefault)
+plt.style.use('seaborn-deep')
+
+# fig = plt.figure(figsize=(1000/110.27, 800/110.27), dpi=110.27)
+# ax.legend(frameon=False)
+# plt.grid(linestyle='--', linewidth=0.5)
+
 def eps_heatmap(M, model='gravity'):
 	'''
 	Takes epsilon matrix and plots a heatmap for the locations
