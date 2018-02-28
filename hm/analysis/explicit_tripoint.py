@@ -15,7 +15,12 @@ import copy
 from scipy.stats import chisquare
 from tqdm import tqdm_notebook as tqdm
 
+plt.rcParams.update(plt.rcParamsDefault)
+plt.style.use('seaborn-deep')
 
+# fig = plt.figure(figsize=(1000/110.27, 800/110.27), dpi=110.27)
+# ax.legend(frameon=False)
+# plt.grid(linestyle='--', linewidth=0.5)
 
 # ------------------ ERROR FUNCTIONS ------------------
 
@@ -120,6 +125,9 @@ def epsilon_r(x,y,N, size=1., ib=True, seed=False, tildeM=False):
 	# Insert locations into two-point
 	p2.popDist = np.insert(p2.popDist, 0, np.array([size, sizeb]), axis=0)
 	p2.locCoords = np.insert(p2.locCoords, 0, np.array([loci, locb]), axis=0)
+
+	# re-initialise parameters
+	p2.DM, p2.size = p2.distance_matrix(), len(p2.locCoords)
 
 	r2 = radiation(p2)
 
@@ -350,23 +358,28 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	yEps = np.array([y * np.sqrt(N), np.array(epsVals)]).T
 
-	fig = plt.figure()
+	fig = plt.figure(figsize=(1000/110.27, 800/110.27), dpi=110.27)
 	ax = fig.add_subplot(111)
 
 	ax.scatter(yEps[:,0], yEps[:,1], s=10, label='Simulation')
 
 	if analytical:
 		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon_g(x, y, gamma=gamma, N=N, exp=exp, tildeM=tildeM)]).T
-		ax.scatter(anlytYEps[:,0], anlytYEps[:,1], s=10, label='Analytical Result')
+		ax.scatter(anlytYEps[:,0], anlytYEps[:,1], s=10, label='Analytical')
 
-	ax.legend()
+	ax.legend(frameon=False)
+	# ax.legend(prop={'size': 6})
 
-	plt.rc('text', usetex=True)
+	# plt.rc('text', usetex=True)
 
-	ax.set_xlabel(r'$r_{jk} \sqrt{N}$')
-	ax.set_ylabel(r'$\epsilon$')
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=15)
+	ax.set_ylabel(r'$\epsilon$', fontsize=15)
 
-	plt.autoscale(enable=True)
+	plt.ylim(-0.0001,0.0005)
+
+	plt.title(r'$r_{ib}=0.4, N=100$')
+
+	plt.grid(linestyle='--', linewidth=0.5)
 
 	plt.show()
 
@@ -386,7 +399,7 @@ def epsChangeY_r(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False):
 		epsVals[i] = epsilon_r(x, val, N, ib=ib, seed=seed)
 
 	# rest of the runs
-	for i in range(runs-1):
+	for i in tqdm(range(runs-1)):
 		tempVals = np.zeros((n, 1))
 		seed = int(np.random.rand(1)[0] * 10000000)
 		for j, val in enumerate(y):
