@@ -169,6 +169,10 @@ def r_jk_plot(p, model, r_ib, tilde = False):
 
 	x = mean_r_jk(p, model, r_jk, tilde = False)[0]
 	mean_y = mean_r_jk(p, model, r_ib, tilde = False)[1]
+	
+	plt.rcParams.update(plt.rcParamsDefault)
+	plt.style.use('seaborn-deep')
+	
 	plt.plot(x*np.sqrt(p.size), mean_y, '.', label = 'simulation')
 	plt.plot(x*np.sqrt(p.size), eps_rjk(p, model, r_ib), '.', label = 'theory')
 	plt.legend()
@@ -180,7 +184,7 @@ def mean_r_ib(p, model, r_jk, tilde = False):
 	eps_target = eps_vs_target(p, model, tilde)
 	x = eps_target[0, :]
 	y = eps_target[1,:]
-	step = int(len(y)/p.size*10)
+	step = int(len(y)/p.size)
 	mean_y = []
 	for i in np.arange(0, len(x), 1):
 		if i >= step:
@@ -208,6 +212,9 @@ def r_ib_plot(p, model, r_jk, tilde = False):
 	'''
 
 	#plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
+	plt.rcParams.update(plt.rcParamsDefault)
+	plt.style.use('seaborn-deep')
+	
 	x = mean_r_ib(p, model, r_jk, tilde = False)[0]
 	mean_y = mean_r_ib(p, model, r_jk, tilde = False)[1]
 	plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
@@ -222,6 +229,10 @@ def plot_ratio(p, model, r_jk, collapse = False, tilde = False):
 	mean = mean_r_ib(p, model, r_jk)
 	x = mean[0]
 	mean_y = mean[1]
+	
+	plt.rcParams.update(plt.rcParamsDefault)
+	plt.style.use('seaborn-deep')
+	
 	if collapse == True:
 		plt.plot(x, mean_y/theory, '.', label = 'N = '+str(p.size))
 		plt.xlabel('$\~r_{ib}} / sqrt(N)} $')
@@ -236,6 +247,10 @@ def plot_ratio_rjk(p, model, r_ib, tilde = False, collapse = False):
 	mean = mean_r_jk(p, model, r_ib)
 	x =  mean[0]
 	mean_y = mean[1]
+	
+	plt.rcParams.update(plt.rcParamsDefault)
+	plt.style.use('seaborn-deep')
+	
 	if collapse == True:
 		plt.plot(x, mean_y/theory, '.', label = 'N = '+str(p.size))
 		plt.xlabel('$\~r_{jk}} / sqrt(N)} $')
