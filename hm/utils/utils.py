@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.util.shape import view_as_windows
+import time
+
 
 def disp(loci, locj):
 	'''
@@ -46,3 +48,14 @@ def gamma_est(S, exp=False):
 		return 0.3 * (S/1000000)**(-0.18) / 1000 # divide by 1000 to account for the change in distance units
 	else:
 		return 1.4 * (S/1000000)**(0.11) 
+
+def time_label():
+	'''
+	Returns current datetime string for labelling plots/data 
+
+	'''
+	t = time.localtime()
+	return time.strftime('%b-%d-%Y_%H%M', t)
+
+
+
