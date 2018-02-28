@@ -592,7 +592,7 @@ def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 
 	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure()
+	fig = plt.figure(figsize=(1000/110.27, 800/110.27), dpi=110.27)
 	ax = fig.add_subplot(111)
 
 	ax.scatter(xEps[:,0], xEps[:,1], s=10, label='Simulation')
@@ -603,12 +603,14 @@ def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 
 	ax.errorbar(xEps[:,0], xEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2)
 
-	ax.legend()
+	ax.legend(frameon=False)
 
-	plt.rc('text', usetex=True)
+	plt.grid(linestyle='--', linewidth=0.5)
 
-	ax.set_xlabel(r'$r_{ib} \sqrt{N}$')
-	ax.set_ylabel(r'$\epsilon$')
+	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=15)
+	ax.set_ylabel(r'$\epsilon$', fontsize=15)
+
+	plt.title(r'$r_{jk}=0.03, N=$' + str(N))
 
 	plt.show()
 
