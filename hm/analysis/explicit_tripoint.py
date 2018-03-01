@@ -413,27 +413,33 @@ def epsChangeY_r(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False):
 
 	yEps = np.array([y * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(1500/110.27, 1200/110.27), dpi=110.27)
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	ax.scatter(yEps[:,0], yEps[:,1], s=10, label='Simulation')
+	ax.scatter(yEps[:,0], yEps[:,1], s=20, label='Simulation', color='C4', marker='x')
 
 	if analytical:
 		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon_r(x, y, N=N)]).T
-		ax.scatter(anlytYEps[:,0], anlytYEps[:,1], s=10, label='Analytical')
+		ax.plot(anlytYEps[:,0], anlytYEps[:,1], label='Analytical', color='grey')
 
-	ax.legend(frameon=False)
+	ax.legend(frameon=False, fontsize=20)
 
-	ax.errorbar(yEps[:,0], yEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2)
+	ax.errorbar(yEps[:,0], yEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2, color='C4')
 
-	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=15)
-	ax.set_ylabel(r'$\epsilon$', fontsize=15)
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=20)
+	ax.set_ylabel(r'$\epsilon$', fontsize=20)
+	plt.tick_params(axis='both', labelsize=15)
+	ax.ticklabel_format(style='sci')
 
 	plt.title(r'$r_{ib}=0.4, N=$'+str(N))
 
 	plt.autoscale(enable=True)
 
-	plt.show()
+	plt.tight_layout()
+
+	plt.savefig(time_label())
+
+	plt.clf()
 
 	return
 
@@ -537,28 +543,34 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
-	for val in x:
+	for val in tqdm(x):
 		epsVals.append(epsilon_g(val, y, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM))
 
 	xEps = np.array([x * np.sqrt(N), np.array(epsVals)]).T
 
-	fig = plt.figure(figsize=(1500/110.27, 1200/110.27), dpi=110.27)
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	ax.scatter(xEps[:,0], xEps[:,1], s=10, label='Simulation')
+	ax.scatter(xEps[:,0], xEps[:,1], s=20, label='Simulation', color='C5', marker='x')
 
 	if analytical:
 		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_g(x, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
-		ax.scatter(anlytXEps[:,0], anlytXEps[:,1], s=10, label='Analytical')
+		ax.plot(anlytXEps[:,0], anlytXEps[:,1], label='Analytical', color='grey')
 
-	ax.legend(frameon=False)
+	ax.legend(frameon=False, fontsize=20)
 
-	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=15)
-	ax.set_ylabel(r'$\epsilon$', fontsize=15)
+	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=20)
+	ax.set_ylabel(r'$\epsilon$', fontsize=20)
+	plt.tick_params(axis='both', labelsize=15)
+	ax.ticklabel_format(style='sci')
 
 	plt.title(r'$r_{jk}=0.03, N=100$')
 
-	plt.show()
+	plt.tight_layout()
+
+	plt.savefig(time_label())
+
+	plt.clf()
 
 	return
 
