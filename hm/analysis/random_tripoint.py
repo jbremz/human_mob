@@ -165,33 +165,40 @@ def eps_rjk(p, model,r_ib, tilde = False):
 def r_jk_plot(p, model, r_ib, tilde = False):
 	'''
 	Plots epsilon as a function of r_jk, given a costant value of r_ib.
-	'''
-
+	'''	
 	x = mean_r_jk(p, model, r_jk, tilde = False)[0]
 	mean_y = mean_r_jk(p, model, r_ib, tilde = False)[1]
 	
 	plt.rcParams.update(plt.rcParamsDefault)
 	plt.style.use('seaborn-deep')
 	
-	plt.plot(x*np.sqrt(p.size), mean_y, '.', label = 'simulation')
-	plt.plot(x*np.sqrt(p.size), eps_rjk(p, model, r_ib), '.', label = 'theory')
+	plt.plot(x*np.sqrt(p.size), mean_y, '.', label = 'Simulation')
+	plt.plot(x*np.sqrt(p.size), eps_rjk(p, model, r_ib), '.', label = 'Analytical')
 	plt.legend()
-	plt.xlabel('$\~r_{jk}$')
-	plt.ylabel('$\epsilon$')
+	plt.xlabel('$r_{jk} \sqrt{N}$', fontsize = 10)
+	plt.ylabel('$\epsilon$', fontsize = 10)
 	plt.show()
 
 def mean_r_ib(p, model, r_jk, tilde = False):
 	eps_target = eps_vs_target(p, model, tilde)
 	x = eps_target[0, :]
 	y = eps_target[1,:]
-	step = int(len(y)/p.size)
+	step = int(len(y)/(p.size*2))
 	mean_y = []
-	for i in np.arange(0, len(x), 1):
+	mean_x = []
+	std_y = []
+	for i in np.arange(0, len(x), 50):
 		if i >= step:
 			mean_y.append(np.mean(y[i-step:i+step]))
+			std = np.std(y[i:i+int(step/2)])
+			std_y.append(std/np.sqrt(len(y[i:i+int(step/2)])))
+			mean_x.append(np.mean(x[i:i+int(step/2)]))
 		if i < step:
 			mean_y.append(np.mean(y[i:i+int(step/2)]))
-	return x, mean_y
+			std = np.std(y[i:i+int(step/2)])
+			std_y.append(std/np.sqrt(len(y[i:i+int(step/2)])))
+			mean_x.append(np.mean(x[i:i+int(step/2)]))
+	return x, mean_x, mean_y, std_y
 
 def mean_r_jk(p, model, r_jk, tilde = False):
 	eps_neighbours = eps_vs_neighbours(p, model, tilde)
@@ -210,18 +217,29 @@ def r_ib_plot(p, model, r_jk, tilde = False):
 	'''
 	Plots epsilon as a function of r_ib, given a costant value of r_jk.
 	'''
-
-	#plt.plot(x*np.sqrt(p.size), y, '.', label = 'simulation')
 	plt.rcParams.update(plt.rcParamsDefault)
 	plt.style.use('seaborn-deep')
 	
-	x = mean_r_ib(p, model, r_jk, tilde = False)[0]
-	mean_y = mean_r_ib(p, model, r_jk, tilde = False)[1]
-	plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'theory')
-	plt.plot(x*np.sqrt(p.size), mean_y, '.', label = 'simulation')
-	plt.xlabel('$\~r_{ib}$')
-	plt.ylabel('$\epsilon$')
-	plt.legend()
+	# Resolution
+	fig = plt.figure(figsize=(800/110.27, 800/110.27))
+		
+	
+	x, mean_x, mean_y, std = mean_r_ib(p, model, r_jk, tilde = False)
+	plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'Analytical', color='grey')
+	#plt.plot(x*np.sqrt(p.size), mean_y, '.', label = 'Simulation')
+	plt.errorbar(np.array(mean_x)*np.sqrt(p.size), mean_y, elinewidth=1, fmt='o', ms=4, yerr=std, label = 'Simulation', color='C5', marker='x')
+	plt.xlabel('$r_{ib} \sqrt{N}$', fontsize = 20)
+	plt.ylabel('$\epsilon$', fontsize = 20)
+	
+	# Legend
+	plt.legend(frameon=False, fontsize=20)
+	
+	# Axes/tick labels
+	plt.tick_params(axis='both', labelsize=15)
+	plt.ticklabel_format(style='sci')
+	
+	
+	plt.tight_layout()
 	plt.show()
 
 def plot_ratio(p, model, r_jk, collapse = False, tilde = False):
@@ -232,7 +250,7 @@ def plot_ratio(p, model, r_jk, collapse = False, tilde = False):
 	
 	plt.rcParams.update(plt.rcParamsDefault)
 	plt.style.use('seaborn-deep')
-	
+
 	if collapse == True:
 		plt.plot(x, mean_y/theory, '.', label = 'N = '+str(p.size))
 		plt.xlabel('$\~r_{ib}} / sqrt(N)} $')
@@ -259,3 +277,19 @@ def plot_ratio_rjk(p, model, r_ib, tilde = False, collapse = False):
 		plt.xlabel('$\~r_{jk}$')
 	plt.ylabel('ratio')
 	plt.legend()
+
+### Run this to plot:
+	
+from hm.pop_models.pop_random import random as pop_random
+from hm.hm_models.gravity import gravity
+from hm.hm_models.radiation import radiation
+from hm.utils.utils import gamma_est
+import random_tripoint as rt
+N = 500
+alpha, beta = 1, 1
+gamma = gamma_est(1/N, exp=True)
+p = pop_random(N)
+g = gravity(p, alpha, beta, gamma, exp=True)
+
+#mean_r_ib(p, g, 0.03)
+rt.r_ib_plot(p, g, 0.03)
