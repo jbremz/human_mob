@@ -10,6 +10,7 @@ plt.style.use('seaborn-deep')
 # fig = plt.figure(figsize=(1000/110.27, 800/110.27), dpi=110.27)
 # ax.legend(frameon=False)
 # plt.grid(linestyle='--', linewidth=0.5)
+# fontsize=15
 
 def eps_heatmap(M, model='gravity'):
 	'''
