@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from skimage.util.shape import view_as_windows
 import time
 
+plt.rcParams.update(plt.rcParamsDefault)
+plt.style.use('seaborn-deep')
+
 
 def disp(loci, locj):
 	'''
@@ -20,10 +23,11 @@ def plot_pop(population, show=True, **kwargs):
 
 	'''
 	coords = population.locCoords
-	plt.scatter(coords[:,0], coords[:,1], s=4)
+	plt.scatter(coords[:,0], coords[:,1], s=4, color='grey')
 
-	plt.xlabel(r'$x$')
-	plt.ylabel(r'$y$')
+	plt.xlabel(r'$x$', fontsize=20)
+	plt.ylabel(r'$y$', fontsize=20)
+	plt.tight_layout()
 
 	if show:
 		plt.show()
