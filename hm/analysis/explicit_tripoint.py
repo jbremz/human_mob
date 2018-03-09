@@ -327,17 +327,17 @@ def plotLocs(N, seed, xmin, xmax, ymin, ymax, show=True):
 
 	'''
 
-	plt.figure()
+	plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 
 	# Plot all the locations
 	plot_pop(pop_random(N, seed=seed), show=False)
 
 	# Plot the changes in r_ib and r_jk
-	plt.plot([0.5 + xmin, 0.5 + xmax],[0.5, 0.5], 'orange', lw=1, label='i')
-	plt.plot([0.5, 0.5],[0.5-0.5*ymax, 0.5-0.5*ymin], 'violet', lw=1, label='j')
-	plt.plot([0.5, 0.5],[0.5+0.5*ymax, 0.5+0.5*ymin], 'mediumseagreen', lw=1, label='k')
+	plt.plot([0.5 + xmin, 0.5 + xmax],[0.5, 0.5], 'C1', lw=2, label=r'$i$')
+	plt.plot([0.5, 0.5],[0.5-0.5*ymax, 0.5-0.5*ymin], 'C2', lw=2, label=r'$j$')
+	plt.plot([0.5, 0.5],[0.5+0.5*ymax, 0.5+0.5*ymin], 'C3', lw=2, label=r'$k$')
 
-	plt.legend(loc='upper right', shadow=True)
+	plt.legend(loc='upper right', shadow=True, fontsize=20)
 
 	if show:
 		plt.show()
@@ -355,6 +355,16 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 
 	for val in tqdm(y):
 		epsVals.append(abs(epsilon_g(x, val, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)))
+
+	# for i in tqdm(np.arange(runs-1)):
+	# 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+	# 	tempVals = np.zeros((n,1))
+	# 	for l, val in enumerate(y):
+	# 		tempVals[l] = epsilon_g(x, val, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)
+	# 	epsVals = np.concatenate((epsVals, tempVals), axis=1)
+
+	# meanEps = np.mean(epsVals, axis=1)
+	# sigmaEps = np.std(epsVals, axis=1)/np.sqrt(runs)
 
 	yEps = np.array([y * np.sqrt(N), np.array(epsVals)]).T
 
@@ -376,7 +386,7 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	plt.tick_params(axis='both', labelsize=15)
 	ax.ticklabel_format(style='sci')
 
-	plt.ylim(-0.00005,0.0005)
+	# plt.ylim(-0.00005,0.001)
 	plt.tight_layout()
 
 	plt.title(r'$r_{ib}=0.4, N=$'+str(N))
@@ -431,7 +441,7 @@ def epsChangeY_r(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False):
 	plt.tick_params(axis='both', labelsize=15)
 	ax.ticklabel_format(style='sci')
 
-	plt.title(r'$r_{ib}=0.4, N=$'+str(N))
+	plt.title(r'$r_{ib}=$'+ str(x) + r' $N=$'+str(N))
 
 	plt.autoscale(enable=True)
 
@@ -456,7 +466,7 @@ def epsChangeYRatio_g(ymin, ymax, x, n, N, runs=1, ib=False, gamma=2, exp=True, 
 		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 		epsVals[i] = epsilon_g(x, val, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)
 
-	for i in np.arange(runs-1):
+	for i in tqdm(np.arange(runs-1)):
 		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 		tempVals = np.zeros((n,1))
 		for l, val in enumerate(y):
@@ -468,22 +478,28 @@ def epsChangeYRatio_g(ymin, ymax, x, n, N, runs=1, ib=False, gamma=2, exp=True, 
 
 	yEps = np.array([y * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(1500/110.27, 1200/110.27), dpi=110.27)
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon_g(x, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
-	ax.scatter(yEps[:,0], yEps[:,1]/anlytYEps[:,1], s=10)
+	ax.scatter(yEps[:,0], yEps[:,1]/anlytYEps[:,1], s=20, marker='x', color='C5')
 
-	ax.errorbar(yEps[:,0], yEps[:,1]/anlytYEps[:,1], yerr=sigmaEps/anlytYEps[:,1], elinewidth=1, fmt='o', ms=2)
+	ax.errorbar(yEps[:,0], yEps[:,1]/anlytYEps[:,1], yerr=sigmaEps/anlytYEps[:,1], elinewidth=1, fmt='o', ms=2, color='C5')
 
-	plt.rc('text', usetex=True)
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=20)
+	ax.set_ylabel(r'$\frac{\epsilon_{sim}}{\epsilon_{ana}}$', fontsize=20)
+	plt.tick_params(axis='both', labelsize=15)
+	ax.ticklabel_format(style='sci')
 
-	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=15)
-	ax.set_ylabel(r'$\frac{\bar{\epsilon_{sim}}}{\epsilon_{ana}}$', fontsize=25)
+	plt.title(r'$r_{jk}=$' + str(x) + r' $N=$' + str(N))
 
 	plt.autoscale(enable=True)
 
-	plt.show()
+	plt.tight_layout()
+
+	plt.savefig(time_label())
+
+	plt.clf()
 
 	return
 
@@ -564,7 +580,7 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	plt.tick_params(axis='both', labelsize=15)
 	ax.ticklabel_format(style='sci')
 
-	plt.title(r'$r_{jk}=0.03, N=100$')
+	plt.title(r'$r_{jk}=$' + str(y) + '$N=$' + str(N))
 
 	plt.tight_layout()
 
@@ -590,7 +606,7 @@ def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 		epsVals[i] = epsilon_r(val, y, N, ib=ib, seed=seed)
 
 	# rest of the runs
-	for i in range(runs-1):
+	for i in tqdm(range(runs-1)):
 		tempVals = np.zeros((n, 1))
 		seed = int(np.random.rand(1)[0] * 10000000)
 		for j, val in enumerate(x):
@@ -602,25 +618,31 @@ def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 
 	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(1500/110.27, 1200/110.27), dpi=110.27)
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	ax.scatter(xEps[:,0], xEps[:,1], s=10, label='Simulation')
+	ax.scatter(xEps[:,0], xEps[:,1], s=20, label='Simulation', color='C4', marker='x')
 
 	if analytical:
 		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_r(x, y, N=N)]).T
-		ax.scatter(anlytXEps[:,0], anlytXEps[:,1], s=10, label='Analytical Result')
+		ax.plot(anlytXEps[:,0], anlytXEps[:,1], label='Analytical', color='grey')
 
-	ax.errorbar(xEps[:,0], xEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2)
+	ax.errorbar(xEps[:,0], xEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2, color='C4')
 
-	ax.legend(frameon=False)
+	ax.legend(frameon=False, fontsize=20)
 
-	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=15)
-	ax.set_ylabel(r'$\epsilon$', fontsize=15)
+	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=20)
+	ax.set_ylabel(r'$\epsilon$', fontsize=20)
+	plt.tick_params(axis='both', labelsize=15)
+	ax.ticklabel_format(style='sci')
 
-	plt.title(r'$r_{jk}=0.03, N=$' + str(N))
+	plt.title(r'$r_{jk}$' + str(y) + '$N=$' + str(N))
 
-	plt.show()
+	plt.tight_layout()
+
+	plt.savefig(time_label())
+
+	plt.clf()
 
 	return
 
@@ -636,7 +658,7 @@ def epsChangeXRatio_g(xmin, xmax, y, n, N, runs=1, ib=False, gamma=2, exp=True, 
 		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 		epsVals[i] = epsilon_g(val, y, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)
 
-	for i in np.arange(runs-1):
+	for i in tqdm(np.arange(runs-1)):
 		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 		tempVals = np.zeros((n,1))
 		for l, val in enumerate(x):
@@ -648,20 +670,27 @@ def epsChangeXRatio_g(xmin, xmax, y, n, N, runs=1, ib=False, gamma=2, exp=True, 
 
 	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(1500/110.27, 1200/110.27), dpi=110.27)
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_g(x, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
 	# ax.scatter(anlytXEps[:,0], xEps[:,1]/anlytXEps[:,1], s=10)
 
-	ax.errorbar(xEps[:,0], xEps[:,1]/anlytXEps[:,1], yerr=sigmaEps/anlytXEps[:,1], elinewidth=1, fmt='o', ms=2)
+	ax.scatter(xEps[:,0], xEps[:,1]/anlytXEps[:,1], s=20, label='Simulation', color='C5', marker='x')
+	ax.errorbar(xEps[:,0], xEps[:,1]/anlytXEps[:,1], yerr=sigmaEps/anlytXEps[:,1], elinewidth=1, fmt='o', ms=2, color='C5')
 
-	plt.rc('text', usetex=True)
+	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=20)
+	ax.set_ylabel(r'$\frac{\epsilon_{sim}}{\epsilon_{ana}}$', fontsize=20)
+	plt.tick_params(axis='both', labelsize=15)
+	ax.ticklabel_format(style='sci')
 
-	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=15)
-	ax.set_ylabel(r'$\frac{\bar{\epsilon_{sim}}}{\epsilon_{ana}}$', fontsize=25)
+	plt.title(r'$r_{jk}=$' + str(y) + r'$, N=$' + str(N))
 
-	plt.show()
+	plt.tight_layout()
+
+	plt.savefig(time_label())
+
+	plt.clf()
 
 	return
 
