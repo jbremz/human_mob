@@ -4,17 +4,18 @@ from scipy.cluster import hierarchy as hier
 from scipy.cluster.hierarchy import linkage
 from hm.pop_models.pop_explicit import explicit as pop_explicit
 from hm.pop_models.pop_random import random as pop_random
+from scipy.spatial.distance import pdist, squareform
 
 class Clusters:
 	def __init__(self, pop, threshold):
 		self.pop = pop
 		self.threshold = threshold
-		self.clusters = self.find_clusters() # Hello Jim: USE THIS!
+		self.clusters = self.find_clusters() 
 		self.clusters_num = self.clusters_num(threshold)
 		self.clustered_loc = self.get_clusters()
 		self.clustered_pop = self.merge_population()
-		#if isinstance(self.pop, pop_explicit) or isinstance(self.pop, pop_random):
-		if isinstance(self.pop, pop_explicit):
+		if isinstance(self.pop, pop_explicit) or isinstance(self.pop, pop_random):
+		#if isinstance(self.pop, pop_explicit):
 			self.clustered_area = self.merge_areas()
 	
 	def find_clusters(self):
@@ -24,10 +25,35 @@ class Clusters:
 	
 	def viz_clusters(self):
 		'''Plots locations with colors distinguishing clusters.''' 
-		pop = self.pop
-		xy = pop.locCoords
-		plt.scatter(xy[:,0], xy[:,1], c = self.clusters)  
-		plt.show()
+		plt.rcParams.update(plt.rcParamsDefault)
+		import seaborn as sns; sns.set()
+		plt.style.use('seaborn-deep')
+		#plt.figure(figsize=(800/110.27, 800/110.27), dpi = 300)
+	
+		xy = self.pop.locCoords
+		palette = sns.color_palette()
+		palette = palette*int(len(self.clusters)/6)
+		colors = []
+		for i in self.clusters:
+		    colors.append(palette[i])
+		plt.axis('equal')
+		
+		from scipy.spatial import Voronoi, voronoi_plot_2d
+		
+		points = self.centroids()/1000
+		vor = Voronoi(points.T)
+
+		voronoi_plot_2d(vor, show_vertices=False, show_points=False, line_width = 0.2)
+		
+		plt.scatter(xy[:,0]/1000, xy[:,1]/1000, s = 1.5, c = colors)
+		
+		plt.xlabel(r'Eastings (Km)', fontsize=14)
+		plt.ylabel(r'Northings (Km)', fontsize=15)
+		plt.tick_params(axis='both', labelsize=15)
+		plt.axis()
+		
+		plt.savefig('voronoi', transparent=True, dpi = 500)
+
 		
 	def clusters_num(self, threshold):
 		'''Returns the number of clusters formed.'''

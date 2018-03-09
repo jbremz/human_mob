@@ -41,7 +41,7 @@ def r_ib(p, i):
 			distance.append((disp(p.locCoords[i], np.array([x, y]))))
 	return np.array(distance)
 
-def epsilon(p, i, model, tilde = False):
+def epsilon(p, i, model, exp=True, tilde = False):
 	'''
 	Returns epsilon for a given target location i.
 	'''
@@ -71,7 +71,7 @@ def epsilon(p, i, model, tilde = False):
 				beta = model.beta
 				gamma = model.gamma
 
-				g2 = gravity(p2, alpha, beta, gamma, exp=True)
+				g2 = gravity(p2, alpha, beta, gamma, exp=exp)
 				flow_ib = g2.flux(i, b)
 				eps = (flow_ib - (model.flux(i, j)+model.flux(i, k)))/(flow_ib)
 
@@ -84,7 +84,7 @@ def epsilon(p, i, model, tilde = False):
 
 	return np.array(epsValues)
 
-def eps_vs_neighbours(p, model, tilde = False):
+def eps_vs_neighbours(p, model, exp = True, tilde = False):
 	'''
 	Returns two arrays with r_jk between all possible target-pair pairs (sorted
 	in ascending order) and the corresponding epsilon.
@@ -94,14 +94,14 @@ def eps_vs_neighbours(p, model, tilde = False):
 	y = []
 	for i in range(p.size):
 		x.append(r_jk(p, i))
-		y.append(epsilon(p, i, model, tilde))
+		y.append(epsilon(p, i, model, exp=exp, tilde=tilde))
 	x = np.concatenate(x)
 	y = np.concatenate(y)
 	xy = np.array([x, y])
 	xy = xy[:,np.argsort(xy[0])]
 	return xy
 
-def eps_vs_target(p, model, tilde = False):
+def eps_vs_target(p, model, exp=True, tilde = False):
 	'''
 	Returns two arrays with all possible r_ib (sorted in ascending order) and
 	the corresponding epsilon.
@@ -111,7 +111,7 @@ def eps_vs_target(p, model, tilde = False):
 	x = []
 	for i in range(p.size):
 		x.append(r_ib(p, i))
-		y.append(epsilon(p, i, model, tilde))
+		y.append(epsilon(p, i, model, exp = exp, tilde=tilde))
 	x = np.concatenate(x)
 	y = np.concatenate(y)
 	xy = np.array([x, y])
@@ -125,18 +125,23 @@ def eps_rib(p, model,r_jk, tilde = False):
 	'''
 
 	if isinstance(model, gravity):
+		x = eps_vs_target(p, model, tilde)[0]
+		r_ij = np.sqrt(x**2 + (r_jk/2)**2)
+		gamma = model.gamma
+		
 		if model.exp:
-			x = eps_vs_target(p, model, tilde)[0]
-			#unnecessary loop below!!!!!!!! CHANGE
 			for i in x:
 				#only if m = 1 for all!
-				gamma = model.gamma
-				eps_values = 1 - (np.exp(-gamma*(np.sqrt(x**2 + (r_jk/2)**2)-x)))
+				eps_values = 1 - (np.exp(-gamma*(r_ij-x)))
+				
+		else:
+			#only if m = 1 for all!
+			eps_values = 1 - (r_ij/x)**(-gamma)
+			
 	if isinstance(model, radiation):
 		x = eps_vs_target(p, model, tilde)[0]
 		for i in x:
 			#only if m = 1 for all!
-			#changed today
 			eps_values = 1 - ((x**2)*(np.pi*p.size*x**2 + 2))/((x**2 + (r_jk/2.)**2)*(np.pi*p.size*(x**2 + (r_jk/2.)**2 )+1))
 	return eps_values
 
@@ -162,32 +167,15 @@ def eps_rjk(p, model,r_ib, tilde = False):
 
 	return eps_values
 
-def r_jk_plot(p, model, r_ib, tilde = False):
-	'''
-	Plots epsilon as a function of r_jk, given a costant value of r_ib.
-	'''	
-	x = mean_r_jk(p, model, r_jk, tilde = False)[0]
-	mean_y = mean_r_jk(p, model, r_ib, tilde = False)[1]
-	
-	plt.rcParams.update(plt.rcParamsDefault)
-	plt.style.use('seaborn-deep')
-	
-	plt.plot(x*np.sqrt(p.size), mean_y, '.', label = 'Simulation')
-	plt.plot(x*np.sqrt(p.size), eps_rjk(p, model, r_ib), '.', label = 'Analytical')
-	plt.legend()
-	plt.xlabel('$r_{jk} \sqrt{N}$', fontsize = 10)
-	plt.ylabel('$\epsilon$', fontsize = 10)
-	plt.show()
-
-def mean_r_ib(p, model, r_jk, tilde = False):
-	eps_target = eps_vs_target(p, model, tilde)
+def mean_r_ib(p, model, r_jk, exp=True, tilde = False):
+	eps_target = eps_vs_target(p, model, exp=exp, tilde=tilde)
 	x = eps_target[0, :]
 	y = eps_target[1,:]
 	step = int(len(y)/(p.size*2))
 	mean_y = []
 	mean_x = []
 	std_y = []
-	for i in np.arange(0, len(x), 50):
+	for i in np.arange(0, int(len(x)/6), 40):
 		if i >= step:
 			mean_y.append(np.mean(y[i-step:i+step]))
 			std = np.std(y[i:i+int(step/2)])
@@ -198,6 +186,20 @@ def mean_r_ib(p, model, r_jk, tilde = False):
 			std = np.std(y[i:i+int(step/2)])
 			std_y.append(std/np.sqrt(len(y[i:i+int(step/2)])))
 			mean_x.append(np.mean(x[i:i+int(step/2)]))
+			
+	for i in np.arange(int(len(x)/6), len(x), 50):
+		#used 50 for exp
+		if i >= step:
+			mean_y.append(np.mean(y[i-step:i+step]))
+			std = np.std(y[i:i+int(step/2)])
+			std_y.append(std/np.sqrt(len(y[i:i+int(step/2)])))
+			mean_x.append(np.mean(x[i:i+int(step/2)]))
+		if i < step:
+			mean_y.append(np.mean(y[i:i+int(step/2)]))
+			std = np.std(y[i:i+int(step/2)])
+			std_y.append(std/np.sqrt(len(y[i:i+int(step/2)])))
+			mean_x.append(np.mean(x[i:i+int(step/2)]))
+			
 	return x, mean_x, mean_y, std_y
 
 def mean_r_jk(p, model, r_jk, tilde = False):
@@ -212,35 +214,6 @@ def mean_r_jk(p, model, r_jk, tilde = False):
 		if i < step:
 			mean_y.append(np.mean(y[i:i+int(step/2)]))
 	return x, mean_y
-
-def r_ib_plot(p, model, r_jk, tilde = False):
-	'''
-	Plots epsilon as a function of r_ib, given a costant value of r_jk.
-	'''
-	plt.rcParams.update(plt.rcParamsDefault)
-	plt.style.use('seaborn-deep')
-	
-	# Resolution
-	fig = plt.figure(figsize=(800/110.27, 800/110.27))
-		
-	
-	x, mean_x, mean_y, std = mean_r_ib(p, model, r_jk, tilde = False)
-	plt.plot(x*np.sqrt(p.size), eps_rib(p, model, r_jk), '.', label = 'Analytical', color='grey')
-	#plt.plot(x*np.sqrt(p.size), mean_y, '.', label = 'Simulation')
-	plt.errorbar(np.array(mean_x)*np.sqrt(p.size), mean_y, elinewidth=1, fmt='o', ms=4, yerr=std, label = 'Simulation', color='C5', marker='x')
-	plt.xlabel('$r_{ib} \sqrt{N}$', fontsize = 20)
-	plt.ylabel('$\epsilon$', fontsize = 20)
-	
-	# Legend
-	plt.legend(frameon=False, fontsize=20)
-	
-	# Axes/tick labels
-	plt.tick_params(axis='both', labelsize=15)
-	plt.ticklabel_format(style='sci')
-	
-	
-	plt.tight_layout()
-	plt.show()
 
 def plot_ratio(p, model, r_jk, collapse = False, tilde = False):
 	theory = eps_rib(p, model, r_jk)
@@ -277,19 +250,3 @@ def plot_ratio_rjk(p, model, r_ib, tilde = False, collapse = False):
 		plt.xlabel('$\~r_{jk}$')
 	plt.ylabel('ratio')
 	plt.legend()
-
-### Run this to plot:
-	
-from hm.pop_models.pop_random import random as pop_random
-from hm.hm_models.gravity import gravity
-from hm.hm_models.radiation import radiation
-from hm.utils.utils import gamma_est
-import random_tripoint as rt
-N = 500
-alpha, beta = 1, 1
-gamma = gamma_est(1/N, exp=True)
-p = pop_random(N)
-g = gravity(p, alpha, beta, gamma, exp=True)
-
-#mean_r_ib(p, g, 0.03)
-rt.r_ib_plot(p, g, 0.03)
