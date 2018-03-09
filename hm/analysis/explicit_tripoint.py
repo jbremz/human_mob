@@ -337,6 +337,8 @@ def plotLocs(N, seed, xmin, xmax, ymin, ymax, show=True):
 	plt.plot([0.5, 0.5],[0.5-0.5*ymax, 0.5-0.5*ymin], 'C2', lw=2, label=r'$j$')
 	plt.plot([0.5, 0.5],[0.5+0.5*ymax, 0.5+0.5*ymin], 'C3', lw=2, label=r'$k$')
 
+	# plt.arrow()
+
 	plt.legend(loc='upper right', shadow=True, fontsize=20)
 
 	if show:
@@ -344,29 +346,29 @@ def plotLocs(N, seed, xmin, xmax, ymin, ymax, show=True):
 
 	return
 
-def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=True, tildeM=2):
+def epsChangeY(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False, gamma=2, exp=True, tildeM=2):
 	'''
 	Fixes x and varies y across n values between ymin and ymax for a random distribution of N locations for gravity model.
 
 	'''
 	y = np.linspace(ymin, ymax, n)
-	epsVals = []
+	epsVals = np.zeros((n, 1))
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
-	for val in tqdm(y):
-		epsVals.append(abs(epsilon_g(x, val, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)))
+	for i, val in enumerate(y):
+		epsVals[i] = abs(epsilon_g(x, val, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM))
 
-	# for i in tqdm(np.arange(runs-1)):
-	# 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
-	# 	tempVals = np.zeros((n,1))
-	# 	for l, val in enumerate(y):
-	# 		tempVals[l] = epsilon_g(x, val, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)
-	# 	epsVals = np.concatenate((epsVals, tempVals), axis=1)
+	for i in tqdm(np.arange(runs-1)):
+		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+		tempVals = np.zeros((n,1))
+		for l, val in enumerate(y):
+			tempVals[l] = epsilon_g(x, val, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)
+		epsVals = np.concatenate((epsVals, tempVals), axis=1)
 
-	# meanEps = np.mean(epsVals, axis=1)
-	# sigmaEps = np.std(epsVals, axis=1)/np.sqrt(runs)
+	meanEps = np.mean(epsVals, axis=1)
+	sigmaEps = np.std(epsVals, axis=1)/np.sqrt(runs)
 
-	yEps = np.array([y * np.sqrt(N), np.array(epsVals)]).T
+	yEps = np.array([y * np.sqrt(N), np.array(meanEps)]).T
 
 	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
@@ -376,6 +378,8 @@ def epsChangeY(ymin, ymax, x, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	if analytical:
 		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon_g(x, y, gamma=gamma, N=N, exp=exp, tildeM=tildeM)]).T
 		ax.plot(anlytYEps[:,0], anlytYEps[:,1], label='Analytical', color='grey')
+
+	ax.errorbar(yEps[:,0], yEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2, color='C5')
 
 	ax.legend(frameon=False, fontsize=20)
 
@@ -548,21 +552,31 @@ def epsChangeYRatio_r(ymin, ymax, x, n, N, runs=1, ib=True):
 
 	return
 
-def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=True, tildeM=2):
+def epsChangeX(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False, gamma=2, exp=True, tildeM=2):
 	'''
 	Fixes y and varies x across n values between ymin and ymax for a random distribution of N locations
 
 	'''
 	x = np.linspace(xmin, xmax, n)
 
-	epsVals = []
+	epsVals = np.zeros((n, 1))
 
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
-	for val in tqdm(x):
-		epsVals.append(epsilon_g(val, y, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM))
+	for i, val in enumerate(x):
+		epsVals[i] = epsilon_g(val, y, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)
 
-	xEps = np.array([x * np.sqrt(N), np.array(epsVals)]).T
+	for i in tqdm(np.arange(runs-1)):
+		seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
+		tempVals = np.zeros((n,1))
+		for l, val in enumerate(x):
+			tempVals[l] = epsilon_g(val, y, N, ib=ib, seed=seed, gamma=gamma, exp=exp, tildeM=tildeM)
+		epsVals = np.concatenate((epsVals, tempVals), axis=1)
+
+	meanEps = np.mean(epsVals, axis=1)
+	sigmaEps = np.std(epsVals, axis=1)/np.sqrt(runs)
+
+	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
 
 	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
@@ -572,6 +586,8 @@ def epsChangeX(xmin, xmax, y, n, N, ib=False, analytical=False, gamma=2, exp=Tru
 	if analytical:
 		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_g(x, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
 		ax.plot(anlytXEps[:,0], anlytXEps[:,1], label='Analytical', color='grey')
+
+	ax.errorbar(xEps[:,0], xEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2, color='C5')
 
 	ax.legend(frameon=False, fontsize=20)
 

@@ -23,10 +23,11 @@ def plot_pop(population, show=True, **kwargs):
 
 	'''
 	coords = population.locCoords
-	plt.scatter(coords[:,0], coords[:,1], s=4, color='grey')
+	plt.scatter(coords[:,0], coords[:,1], s=100, color='grey')
 
 	plt.xlabel(r'$x$', fontsize=20)
 	plt.ylabel(r'$y$', fontsize=20)
+	plt.tick_params(axis='both', labelsize=15)
 	plt.tight_layout()
 
 	if show:

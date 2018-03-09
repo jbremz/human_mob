@@ -6,6 +6,7 @@ from hm.analysis.explicit_tripoint import *
 import numpy as np
 from matplotlib import pyplot as plt
 from tqdm import tqdm
+from hm.utils.utils import time_label
 
 plt.rcParams.update(plt.rcParamsDefault)
 plt.style.use('seaborn-deep')
@@ -54,64 +55,75 @@ def ratio_N(r_ib, r_jk, Nmin, Nmax, n, runs=1, size=1, gamma=2, exp=True, tildeM
 		else:
 			gamma = 1.4 * (S)**(0.11)
 
+		r_jk = 1/np.sqrt(val)
+
 		for run in range(runs):
 			tempRatios.append(k_ratio(r_ib, r_jk, val, gamma, exp))
 		ratios.append(np.mean(np.array(tempRatios)))
 		sRatios.append(np.std(np.array(tempRatios))/np.sqrt(runs))
 
-	fig = plt.figure(figsize=(1000/110.27, 800/110.27), dpi=110.27)
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	ax.errorbar(N, ratios, yerr=sRatios, elinewidth=1, fmt='o', ms=4)
+	ax.errorbar(N, ratios, yerr=sRatios, elinewidth=1, fmt='x', ms=4, color='C5')
 
 	ax.legend(frameon=False)
 
-	plt.grid(linestyle='--', linewidth=0.5)
+	ax.set_xlabel(r'$N$', fontsize=20)
+	ax.set_ylabel(r'$\frac{K_{ij}}{K_{ib}}$', fontsize=20)
+	plt.tick_params(axis='both', labelsize=15)
 
-	ax.set_xlabel(r'$N$', fontsize=15)
-	ax.set_ylabel(r'$\frac{K_{ij}}{K_{ib}}$', fontsize=15)
+	plt.title('Normalisation constant ratio for gravity model - ' + r'$r_{ib} = %s$' % r_ib)
 
-	plt.title('Normalisation constant ratio for gravity model - ' + r'$r_{ib} = %s$' % r_ib + ', ' + r'$r_{jk} = %s$' % r_jk)
+	plt.tight_layout()
 
-	plt.show()
+	plt.savefig(time_label())
 
 	return
 
-def ratio_rjk(r_ib, r_jkMin, r_jkMax, n, N, runs=1, size=1, gamma=2, exp=True):
+def ratio_rjk(r_ib, r_jkMin, r_jkMax, n, N, runs=1, size=1, gamma=None, exp=True):
 	'''
-	Plots ratio of the K values for varying number of locations N
+	Plots ratio of the K values for varying r_jk
 
 	'''
+	S = 1/N # mean unit area
+	if exp:
+		gamma = 0.3 * (S)**(-0.18)
+	else:
+		gamma = 1.4 * (S)**(0.11)
 
 	r_jk = np.linspace(r_jkMin, r_jkMax, n)
 
 	ratios = []
 	sRatios = []
 
-	for val in r_jk:
+	for val in tqdm(r_jk):
 		tempRatios = []
 		for run in range(runs):
 			tempRatios.append(k_ratio(r_ib, val, N, gamma, exp))
 		ratios.append(np.mean(np.array(tempRatios)))
 		sRatios.append(np.std(np.array(tempRatios)))
 
-	fig = plt.figure(figsize=(1000/110.27, 800/110.27), dpi=110.27)
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
 
-	ax.errorbar(r_jk, ratios, yerr=sRatios, elinewidth=1, fmt='o', ms=4)
+	ax.errorbar(r_jk * np.sqrt(N), ratios, yerr=sRatios, elinewidth=1, fmt='x', ms=4, color='C5')
 
 	ax.legend(frameon=False)
 
-	plt.grid(linestyle='--', linewidth=0.5)
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=20)
+	ax.set_ylabel(r'$\frac{K_{ij}}{K_{ib}}$', fontsize=20)
+	plt.tick_params(axis='both', labelsize=15)
 
-	ax.set_xlabel(r'$r_{jk}$', fontsize=15)
-	ax.set_ylabel(r'$\frac{K_{ij}}{K_{ib}}$', fontsize=15)
+	plt.ylim(0.8, 1.3)
 
-	plt.title('Normalisation constant ratio for gravity model - ' + r'$r_{ib} = %s$' % r_ib + ', ' + r'$N = %s$' % N + ', ' + r'$\gamma = %s$' % gamma)
+	plt.title('Normalisation constant ratio for gravity model - ' + r'$r_{ib} = %s$' % r_ib + ', ' + r'$N = %s$' % N)
 
-	plt.show()
+	plt.tight_layout()
+
+	plt.savefig(time_label())
 
 	return
 
