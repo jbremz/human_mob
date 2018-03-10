@@ -1,6 +1,6 @@
 # from hm.utils.utils import disp
 import numpy as np
-from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm
 
 class mob_model:
 	'''

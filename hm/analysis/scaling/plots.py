@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns; sns.set()
-from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm
 import scipy as sp
 
 plt.rcParams.update(plt.rcParamsDefault)
@@ -180,13 +180,13 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 		sigma_epss.append(sigma_eps)
 
 	# Alter figsize here
-	fig = plt.figure(figsize=(11,8))
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	for i in range(len(mean_epss)):
 		# labels = [0] + d_maxs # to include the base (no clustering) level
 		labels = d_maxs
-		ax.errorbar(bins, mean_epss[i], elinewidth=1, fmt='o', ms=4, yerr=sigma_epss[i], label=r'$d_{max} = $' + str(labels[i]) + 'm')
+		ax.errorbar(bins/1000, mean_epss[i], elinewidth=1, fmt='x', ms=4, yerr=sigma_epss[i], label=r'$d_{max} = $' + str(labels[i]) + 'm')
 
 	# Axes labels & Title
 
@@ -195,11 +195,13 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	else:
 		flow = 'backwards-flow'
 
-	ax.set_xlabel(r'Distance (m)', fontsize=25, labelpad=20)
-	ax.set_ylabel(r'$<\epsilon>$', fontsize=25)
+	ax.set_xlabel(r'Distance (Km)', fontsize=20, labelpad=20)
+	ax.set_ylabel(r'$<\epsilon>$', fontsize=20)
 	# ax.set_title(r'Mean $\epsilon$ at different levels of clustering (' + flow + ')')
-	ax.legend(fontsize=15)
+	ax.legend(frameon=False, fontsize=15, loc='upper right')
 	ax.tick_params(labelsize=15)
+	plt.ylim(-0.03, 0.9)
+	plt.tight_layout()
 
 	return
 
