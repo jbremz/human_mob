@@ -200,7 +200,6 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	# ax.set_title(r'Mean $\epsilon$ at different levels of clustering (' + flow + ')')
 	ax.legend(frameon=False, fontsize=15, loc='upper right')
 	ax.tick_params(labelsize=15)
-	plt.ylim(-0.03, 0.9)
 	plt.tight_layout()
 
 	return
@@ -221,7 +220,7 @@ def gamma_S(hier, gamma_0, gamma_opts):
 
 	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
 
-	fig = plt.figure(figsize=(11,8))
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	gam_fit = slope*x + intercept
@@ -229,11 +228,13 @@ def gamma_S(hier, gamma_0, gamma_opts):
 	ax.scatter(x,y)
 	ax.plot(x, gam_fit, 'r', linewidth=0.5)
 
-	ax.set_xlabel(r'$\log(<S>)$', fontsize=15)
-	ax.set_ylabel(r'$\log(\gamma_{opt})$', fontsize=15)
-	ax.set_title(r'$\gamma_{opt}$ against the natural logarithm of mean population unit area, exponent $=$' + str(slope) + r'$\pm$' + str(std_err))
+	ax.set_xlabel(r'$\log(<S>)$', fontsize=20)
+	ax.set_ylabel(r'$\log(\gamma_{opt})$', fontsize=20)
+	ax.set_title(r'exponent $=$' + str(slope) + r'$\pm$' + str(std_err))
 
-	plt.show()
+	ax.legend(frameon=False, fontsize=15, loc='upper right')
+	ax.tick_params(labelsize=15)
+	plt.tight_layout()
 
 	return
 
@@ -248,7 +249,7 @@ def gamma_dmax(d_maxs, gamma_opts):
 
 	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
 
-	fig = plt.figure(figsize=(11,8))
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	gam_fit = slope*x + intercept
@@ -256,18 +257,19 @@ def gamma_dmax(d_maxs, gamma_opts):
 	ax.scatter(x,y)
 	ax.plot(x, gam_fit, 'r', linewidth=0.5)
 
-	ax.set_xlabel(r'$d_{max}$ (m)', fontsize=15)
-	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=15)
-	ax.set_title(r'$\gamma_{opt}$ against maximimum clustering distance (d$_{max}$), gradient $=$' + str(slope) + r'$\pm$' + str(std_err))
+	ax.set_xlabel(r'$d_{max}$ (m)', fontsize=20)
+	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=20)
+	ax.set_title(r'gradient $=$' + str(slope) + r'$\pm$' + str(std_err))
 
-	plt.show()
+	ax.tick_params(labelsize=15)
+	plt.tight_layout()
 
 	return
 
 
 def gamma_d(hier, gamma_opts):
 	'''
-	Plots gamma against unit area
+	Plots gamma against average separation
 
 	'''
 	ds = [] # average separation 
@@ -288,27 +290,22 @@ def gamma_d(hier, gamma_opts):
 
 	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
 
-	fig = plt.figure(figsize=(11,8))
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	gam_fit = slope*x + intercept
 
-	ax.scatter(x,y)
-	ax.plot(x, gam_fit, 'r', linewidth=0.5)
+	ax.scatter(x/1000,y)
+	ax.plot(x/1000, gam_fit, 'r', linewidth=0.5)
 
-	ax.set_xlabel(r'Mean Location Separation (m)', fontsize=15)
-	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=15)
-	ax.set_title(r'$\gamma_{opt}$ against Mean Location Separation, gradient $=$' + str(slope) + r'$\pm$' + str(std_err))
+	ax.set_xlabel(r'Mean Location Separation (Km)', fontsize=20)
+	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=20)
+	ax.set_title(r'gradient $=$' + str(slope) + r'$\pm$' + str(std_err))
 
-	plt.show()
+	ax.tick_params(labelsize=15)
+	plt.tight_layout()
 
 	return
-
-def gamma_pop(hier, gamma_opts):
-	'''
-	Plots gamma against population mass product between the locations
-
-	'''
 	
 
 
