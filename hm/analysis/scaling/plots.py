@@ -186,7 +186,8 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	for i in range(len(mean_epss)):
 		# labels = [0] + d_maxs # to include the base (no clustering) level
 		labels = d_maxs
-		ax.errorbar(bins/1000, mean_epss[i], elinewidth=1, fmt='x', ms=4, yerr=sigma_epss[i], label=r'$d_{max} = $' + str(labels[i]) + 'm')
+		# ax.errorbar(bins/1000, mean_epss[i], elinewidth=1, fmt='x', ms=10, yerr=sigma_epss[i], label=r'$d_{max} = $' + str(labels[i]) + 'm')
+		ax.errorbar(bins/1000, mean_epss[i], elinewidth=1, fmt='x', ms=6, yerr=sigma_epss[i], label=str(labels[i]))
 
 	# Axes labels & Title
 
@@ -195,11 +196,10 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	else:
 		flow = 'backwards-flow'
 
-	ax.set_xlabel(r'Distance (Km)', fontsize=20, labelpad=20)
-	ax.set_ylabel(r'$<\epsilon>$', fontsize=20)
-	# ax.set_title(r'Mean $\epsilon$ at different levels of clustering (' + flow + ')')
-	ax.legend(frameon=False, fontsize=15, loc='upper right')
-	ax.tick_params(labelsize=15)
+	ax.set_xlabel(r'Distance (Km)', fontsize=30, labelpad=20)
+	ax.set_ylabel(r'$<\epsilon>$', fontsize=30)
+	ax.legend(frameon=False, fontsize=20, loc='upper right')
+	ax.tick_params(labelsize=20)
 	plt.tight_layout()
 
 	return
@@ -209,34 +209,45 @@ def gamma_S(hier, gamma_0, gamma_opts):
 	Plots gamma against unit area given a pop_hier object and the optimised gammas
 
 	'''
-	S = [np.mean(hier.pop.locArea)] # level 0
+	# S = [np.mean(hier.pop.locArea)] # level 0
+	S = []
 	gammas = [gamma_0] + gamma_opts
 
 	for level in hier.levels:
-		S.append(np.mean(level.clustered_area))
+		S.append(np.mean(level.clustered_area)*10**(-6))
 
 	x = np.log(S)
-	y = np.log(gammas)
+	# y = np.log(gammas)
+	y = np.log(gamma_opts)
 
-	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
+	# slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
+	coeffs, cov = np.polyfit(x, y, 1, cov=True)
 
 	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	gam_fit = slope*x + intercept
+	gam_fit = coeffs[0]*x + coeffs[1]
 
 	ax.scatter(x,y)
 	ax.plot(x, gam_fit, 'r', linewidth=0.5)
 
 	ax.set_xlabel(r'$\log(<S>)$', fontsize=20)
 	ax.set_ylabel(r'$\log(\gamma_{opt})$', fontsize=20)
-	ax.set_title(r'exponent $=$' + str(slope) + r'$\pm$' + str(std_err))
+	ax.set_title(r'exponent $=$' + str(coeffs[0]) + r'$\pm$' + str(np.sqrt(cov[0][0])))
 
 	ax.legend(frameon=False, fontsize=15, loc='upper right')
 	ax.tick_params(labelsize=15)
 	plt.tight_layout()
 
-	return
+	sigma_a = np.sqrt(cov[0][0])
+	sigma_b = np.sqrt(cov[1][1])
+
+	alpha = np.exp(coeffs[1])
+	beta = coeffs[0]
+	sigma_alpha = np.exp(coeffs[1])*sigma_b
+	sigma_beta = sigma_a
+
+	return alpha, beta, sigma_alpha, sigma_beta
 
 def gamma_dmax(d_maxs, gamma_opts):
 	'''
@@ -247,24 +258,25 @@ def gamma_dmax(d_maxs, gamma_opts):
 	x = np.array(d_maxs) # add the value for no clustering i.e. d_max = 0 
 	y = np.array(gamma_opts)
 
-	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
+	# slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
+	coeffs, cov = np.polyfit(x, y, 1, cov=True)
 
 	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	gam_fit = slope*x + intercept
+	gam_fit = coeffs[0]*x + coeffs[1]
 
 	ax.scatter(x,y)
 	ax.plot(x, gam_fit, 'r', linewidth=0.5)
 
 	ax.set_xlabel(r'$d_{max}$ (m)', fontsize=20)
 	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=20)
-	ax.set_title(r'gradient $=$' + str(slope) + r'$\pm$' + str(std_err))
+	ax.set_title(r'gradient $=$' + str(coeffs[0]) + r'$\pm$' + str(np.sqrt(cov[0][0])))
 
 	ax.tick_params(labelsize=15)
 	plt.tight_layout()
 
-	return
+	return coeffs, np.sqrt(np.diag(cov))
 
 
 def gamma_d(hier, gamma_opts):
@@ -288,20 +300,96 @@ def gamma_d(hier, gamma_opts):
 	# x = np.log(x)
 	# y = np.log(y)
 
-	slope, intercept, r_value, p_value, std_err = sp.stats.linregress(x, y)
+	coeffs, cov = np.polyfit(x, y, 1, cov=True)
 
 	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	gam_fit = slope*x + intercept
+	gam_fit = coeffs[0]*x + coeffs[1]
 
 	ax.scatter(x/1000,y)
 	ax.plot(x/1000, gam_fit, 'r', linewidth=0.5)
 
 	ax.set_xlabel(r'Mean Location Separation (Km)', fontsize=20)
 	ax.set_ylabel(r'$\gamma_{opt}$', fontsize=20)
-	ax.set_title(r'gradient $=$' + str(slope) + r'$\pm$' + str(std_err))
+	ax.set_title(r'gradient $=$' + str(coeffs[0]) + r'$\pm$' + str(np.sqrt(cov[0][0])))
 
+	ax.tick_params(labelsize=15)
+	plt.tight_layout()
+
+	return coeffs, np.sqrt(np.diag(cov))
+
+def eps_distance_compare(epsList, DMList, N, labels=[r'Lenormand $\gamma$', r'Optimised $\gamma$'], ib=True, model='gravity'):
+	'''
+	Plots epsilon against distances at the same scale for two different models/exponents etc.
+
+	'''
+	epsTris = []
+	DMTris = []
+
+	if ib:
+		for i in range(len(epsList)):
+			# Only take the upper triangle
+			iu = np.array(np.triu_indices(epsList[i].shape[0]))
+			diag = iu[0] == iu[1]
+			iu = list(iu[:,~diag]) # take out the diagonal
+			epsTri = epsList[i][iu]
+			DMTri = DMList[i][iu]
+			epsTris.append(epsTri)
+			DMTris.append(DMTri)
+	else:
+		for i in range(len(epsList)):
+			# Only take lower triangle (backflows)
+			il = np.array(np.tril_indices(eps.shape[0]))
+			diag = il[0] == il[1]
+			il = list(il[:,~diag]) # take out the diagonal
+			epsTri = eps[i][il]
+			DMTri = DM[i][il]
+			epsTris.append(epsTri)
+			DMTris.append(DMTris)
+
+	# bins the data by distance
+	xMin, xMax = np.min(DMTris[0]), np.max(DMTris[0]) # choose level 0 to define the bins (this will have the greatest extent in DM)
+	bins = np.linspace(xMin, xMax-(xMax-xMin)/N, N) # the final bin edge is a bin-width before the maxmium distance value (so it has > 1 locations in it)
+
+	mean_epss = []
+	sigma_epss = []
+
+	# Find mean and std. for each distance bin (across all the clustering levels)
+	for i in range(len(epsList)):
+		inds = np.digitize(DMTris[i], bins) # indices of the distance bins to which each eps value belongs
+		
+		mean_eps = []
+		sigma_eps = []
+
+		for b in np.arange(1,len(bins)+1):
+			mask = inds == b
+			e = epsTris[i][mask]
+			mean_eps.append(np.mean(e))
+			sigma_eps.append(np.std(e)/np.sqrt(len(e)))
+
+		mean_epss.append(mean_eps)
+		sigma_epss.append(sigma_eps)
+
+	# Alter figsize here
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
+	ax = fig.add_subplot(111)
+
+	for i in range(len(mean_epss)):
+		# labels = [0] + d_maxs # to include the base (no clustering) level
+		ax.errorbar(bins/1000, mean_epss[i], elinewidth=1, fmt='x', ms=4, yerr=sigma_epss[i], label=labels[i])
+
+	# Axes labels & Title
+
+	if ib:
+		flow = 'forward-flow'
+	else:
+		flow = 'backwards-flow'
+
+	ax.set_xlabel(r'Distance (Km)', fontsize=20, labelpad=20)
+	ax.set_ylabel(r'$|\langle \epsilon \rangle|$', fontsize=20)
+	# ax.set_title(r'Mean $\epsilon$ at different levels of clustering (' + flow + ')')
+	ax.legend(frameon=False, fontsize=15, loc='upper right')
 	ax.tick_params(labelsize=15)
 	plt.tight_layout()
 
