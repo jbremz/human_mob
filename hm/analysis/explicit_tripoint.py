@@ -15,6 +15,7 @@ import copy
 from scipy.stats import chisquare
 from tqdm import tqdm
 from hm.utils.utils import time_label
+import matplotlib.ticker as plticker
 
 plt.rcParams.update(plt.rcParamsDefault)
 plt.style.use('seaborn-deep')
@@ -352,6 +353,7 @@ def epsChangeY(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False, gamma=2,
 
 	'''
 	y = np.linspace(ymin, ymax, n)
+	y_smooth = np.linspace(ymin, ymax, 100)
 	epsVals = np.zeros((n, 1))
 	seed = int(np.random.rand(1)[0] * 10000000) # so that all the random population distriubtions are the same
 
@@ -370,27 +372,28 @@ def epsChangeY(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False, gamma=2,
 
 	yEps = np.array([y * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
+	fig = plt.figure(figsize=(840/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	ax.scatter(yEps[:,0], yEps[:,1], s=20, label='Simulation', color='C5', marker='x')
+	ax.scatter(yEps[:,0], yEps[:,1], s=60, label='Simulation', color='C5', marker='x')
 
 	if analytical:
-		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon_g(x, y, gamma=gamma, N=N, exp=exp, tildeM=tildeM)]).T
+		anlytYEps = np.array([y_smooth * np.sqrt(N), anlyt_epsilon_g(x, y_smooth, gamma=gamma, N=N, exp=exp, tildeM=tildeM)]).T
 		ax.plot(anlytYEps[:,0], anlytYEps[:,1], label='Analytical', color='grey')
 
 	ax.errorbar(yEps[:,0], yEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2, color='C5')
 
-	ax.legend(frameon=False, fontsize=20)
+	ax.legend(frameon=False, fontsize=25)
 
 	# plt.rc('text', usetex=True)
-
-	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=20)
-	ax.set_ylabel(r'$\epsilon$', fontsize=20)
-	plt.tick_params(axis='both', labelsize=15)
+	# loc = plticker.MultipleLocator(base=0.02) # you can change the base as desired
+	# ax.yaxis.set_major_locator(loc)
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=30)
+	ax.set_ylabel(r'$\epsilon$', fontsize=40)
+	plt.tick_params(axis='both', labelsize=20)
 	ax.ticklabel_format(style='sci')
 
-	plt.ylim(-0.00005,0.0005)
+	# plt.ylim(-0.00005,0.0005)
 	plt.tight_layout()
 
 	plt.title(r'$r_{ib}=0.4, N=$'+str(N))
@@ -427,22 +430,25 @@ def epsChangeY_r(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False):
 
 	yEps = np.array([y * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
+	fig = plt.figure(figsize=(840/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	ax.scatter(yEps[:,0], yEps[:,1], s=20, label='Simulation', color='C4', marker='x')
+	ax.scatter(yEps[:,0], yEps[:,1], s=60, label='Simulation', color='C2', marker='x')
 
 	if analytical:
 		anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon_r(x, y, N=N)]).T
 		ax.plot(anlytYEps[:,0], anlytYEps[:,1], label='Analytical', color='grey')
 
-	ax.legend(frameon=False, fontsize=20)
+	ax.legend(frameon=False, fontsize=25)
 
-	ax.errorbar(yEps[:,0], yEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2, color='C4')
+	ax.errorbar(yEps[:,0], yEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2, color='C2')
 
-	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=20)
-	ax.set_ylabel(r'$\epsilon$', fontsize=20)
-	plt.tick_params(axis='both', labelsize=15)
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=30)
+	ax.set_ylabel(r'$\epsilon$', fontsize=40)
+
+	loc = plticker.MultipleLocator(base=0.02)
+	ax.yaxis.set_major_locator(loc)
+	plt.tick_params(axis='both', labelsize=20)
 	ax.ticklabel_format(style='sci')
 
 	plt.title(r'$r_{ib}=0.4, N=$'+str(N))
@@ -546,12 +552,13 @@ def epsChangeYRatio_r(ymin, ymax, x, n, N, runs=1, ib=True):
 
 	return
 
-def epsChangeX(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False, gamma=2, exp=True, tildeM=2):
+def epsChangeX(xmin, xmax, y, n, N, runs=1, ib=True, analytical=False, gamma=2, exp=True, tildeM=2):
 	'''
 	Fixes y and varies x across n values between ymin and ymax for a random distribution of N locations
 
 	'''
 	x = np.linspace(xmin, xmax, n)
+	x_smooth = np.linspace(xmin, xmax, 100)
 
 	epsVals = np.zeros((n, 1))
 
@@ -572,22 +579,24 @@ def epsChangeX(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False, gamma=2,
 
 	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
+	fig = plt.figure(figsize=(840/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	ax.scatter(xEps[:,0], xEps[:,1], s=20, label='Simulation', color='C5', marker='x')
+	ax.scatter(xEps[:,0], xEps[:,1], s=60, label='Simulation', color='C5', marker='x')
 
 	if analytical:
-		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_g(x, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
+		anlytXEps = np.array([x_smooth * np.sqrt(N), anlyt_epsilon_g(x_smooth, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
 		ax.plot(anlytXEps[:,0], anlytXEps[:,1], label='Analytical', color='grey')
 
 	ax.errorbar(xEps[:,0], xEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2, color='C5')
 
-	ax.legend(frameon=False, fontsize=20)
+	ax.legend(frameon=False, fontsize=25)
 
-	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=20)
-	ax.set_ylabel(r'$\epsilon$', fontsize=20)
-	plt.tick_params(axis='both', labelsize=15)
+	loc = plticker.MultipleLocator(base=0.004) # you can change the base as desired
+	ax.yaxis.set_major_locator(loc)
+	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=30)
+	ax.set_ylabel(r'$\epsilon$', fontsize=40)
+	plt.tick_params(axis='both', labelsize=20)
 	ax.ticklabel_format(style='sci')
 
 	plt.title(r'$r_{jk}=0.03, N=100$')
@@ -606,6 +615,7 @@ def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 
 	'''
 	x = np.linspace(xmin, xmax, n)
+	x_smooth = np.linspace(xmin, xmax, 100)
 
 	epsVals = np.zeros((n,1))
 
@@ -628,25 +638,31 @@ def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 
 	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(1500/110.27, 1200/110.27), dpi=110.27)
+	fig = plt.figure(figsize=(840/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	ax.scatter(xEps[:,0], xEps[:,1], s=10, label='Simulation')
+	ax.scatter(xEps[:,0], xEps[:,1], s=60, label='Simulation', color='C2', marker='x')
 
 	if analytical:
-		anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_r(x, y, N=N)]).T
-		ax.scatter(anlytXEps[:,0], anlytXEps[:,1], s=10, label='Analytical Result')
+		anlytXEps = np.array([x_smooth * np.sqrt(N), anlyt_epsilon_r(x_smooth, y, N=N)]).T
+		ax.plot(anlytXEps[:,0], anlytXEps[:,1], label='Analytical', color='grey')
 
-	ax.errorbar(xEps[:,0], xEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2)
+	ax.errorbar(xEps[:,0], xEps[:,1], yerr=sigmaEps, elinewidth=1, fmt='o', ms=2, color='C2')
 
-	ax.legend(frameon=False)
+	ax.legend(frameon=False, fontsize=25)
 
-	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=15)
-	ax.set_ylabel(r'$\epsilon$', fontsize=15)
+	loc = plticker.MultipleLocator(base=0.4)
+	ax.yaxis.set_major_locator(loc)
+	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=30)
+	ax.set_ylabel(r'$\epsilon$', fontsize=40)
+	plt.tick_params(axis='both', labelsize=20)
+	ax.ticklabel_format(style='sci')
 
 	plt.title(r'$r_{jk}=0.03, N=$' + str(N))
 
-	plt.show()
+	plt.tight_layout()
+
+	plt.savefig(time_label())
 
 	return
 
