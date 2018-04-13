@@ -30,6 +30,9 @@ ax.set_ylabel(r'$\epsilon$', fontsize=40)
 plt.tick_params(axis='both', labelsize=20)
 ax.ticklabel_format(style='sci')
 
+# This can be useful
+plt.ylim(-0.001,0.006)
+
 # stops lables being cut off
 plt.tight_layout()
 

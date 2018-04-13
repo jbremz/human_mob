@@ -372,7 +372,7 @@ def epsChangeY(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False, gamma=2,
 
 	yEps = np.array([y * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(840/110.27, 800/110.27), dpi=300)
+	fig = plt.figure(figsize=(850/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	ax.scatter(yEps[:,0], yEps[:,1], s=60, label='Simulation', color='C5', marker='x')
@@ -386,17 +386,19 @@ def epsChangeY(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False, gamma=2,
 	ax.legend(frameon=False, fontsize=25)
 
 	# plt.rc('text', usetex=True)
-	# loc = plticker.MultipleLocator(base=0.02) # you can change the base as desired
-	# ax.yaxis.set_major_locator(loc)
+	yloc = plticker.MultipleLocator(base=0.002) # you can change the base as desired
+	ax.yaxis.set_major_locator(yloc)
+	xloc = plticker.MultipleLocator(base=0.5) # you can change the base as desired
+	ax.xaxis.set_major_locator(xloc)
 	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=30)
 	ax.set_ylabel(r'$\epsilon$', fontsize=40)
 	plt.tick_params(axis='both', labelsize=20)
 	ax.ticklabel_format(style='sci')
 
-	# plt.ylim(-0.00005,0.0005)
+	plt.ylim(-0.001,0.006)
 	plt.tight_layout()
 
-	plt.title(r'$r_{ib}=0.4, N=$'+str(N))
+	# plt.title(r'$r_{ib}=0.4, N=$'+str(N))
 
 	plt.savefig(time_label())
 
@@ -430,7 +432,7 @@ def epsChangeY_r(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False):
 
 	yEps = np.array([y * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(840/110.27, 800/110.27), dpi=300)
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	ax.scatter(yEps[:,0], yEps[:,1], s=60, label='Simulation', color='C2', marker='x')
@@ -451,11 +453,13 @@ def epsChangeY_r(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False):
 	plt.tick_params(axis='both', labelsize=20)
 	ax.ticklabel_format(style='sci')
 
-	plt.title(r'$r_{ib}=0.4, N=$'+str(N))
+	# plt.title(r'$r_{ib}=0.4, N=$'+str(N))
 
 	plt.autoscale(enable=True)
 
 	plt.tight_layout()
+
+	plt.gca().set_aspect('equal')
 
 	plt.savefig(time_label())
 
@@ -488,22 +492,27 @@ def epsChangeYRatio_g(ymin, ymax, x, n, N, runs=1, ib=False, gamma=2, exp=True, 
 
 	yEps = np.array([y * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(1500/110.27, 1200/110.27), dpi=110.27)
+	fig = plt.figure(figsize=(865/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	anlytYEps = np.array([y * np.sqrt(N), anlyt_epsilon_g(x, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
-	ax.scatter(yEps[:,0], yEps[:,1]/anlytYEps[:,1], s=10)
 
-	ax.errorbar(yEps[:,0], yEps[:,1]/anlytYEps[:,1], yerr=sigmaEps/anlytYEps[:,1], elinewidth=1, fmt='o', ms=2)
+	ax.errorbar(yEps[:,0], yEps[:,1]/anlytYEps[:,1], yerr=sigmaEps/anlytYEps[:,1], elinewidth=1, fmt='x', ms=7, color='C5')
 
-	plt.rc('text', usetex=True)
+	loc = plticker.MultipleLocator(base=0.0005)
+	ax.yaxis.set_major_locator(loc)
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=30)
+	ax.set_ylabel(r'$\frac{\epsilon_{sim}}{\epsilon_{ana}}$', fontsize=40)
+	plt.tick_params(axis='both', labelsize=20)
+	ax.ticklabel_format(style='sci')
 
-	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=15)
-	ax.set_ylabel(r'$\frac{\bar{\epsilon_{sim}}}{\epsilon_{ana}}$', fontsize=25)
+	plt.ylim(0.978,0.98)
 
-	plt.autoscale(enable=True)
+	plt.tight_layout()
 
-	plt.show()
+	plt.savefig(time_label())
+
+	plt.clf()
 
 	return
 
@@ -579,7 +588,7 @@ def epsChangeX(xmin, xmax, y, n, N, runs=1, ib=True, analytical=False, gamma=2, 
 
 	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(840/110.27, 800/110.27), dpi=300)
+	fig = plt.figure(figsize=(850/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	ax.scatter(xEps[:,0], xEps[:,1], s=60, label='Simulation', color='C5', marker='x')
@@ -599,7 +608,9 @@ def epsChangeX(xmin, xmax, y, n, N, runs=1, ib=True, analytical=False, gamma=2, 
 	plt.tick_params(axis='both', labelsize=20)
 	ax.ticklabel_format(style='sci')
 
-	plt.title(r'$r_{jk}=0.03, N=100$')
+	plt.ylim(-0.0005,0.013)
+
+	# plt.title(r'$r_{jk}=0.03, N=100$')
 
 	plt.tight_layout()
 
@@ -638,7 +649,7 @@ def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 
 	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(840/110.27, 800/110.27), dpi=300)
+	fig = plt.figure(figsize=(820/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	ax.scatter(xEps[:,0], xEps[:,1], s=60, label='Simulation', color='C2', marker='x')
@@ -658,7 +669,7 @@ def epsChangeX_r(xmin, xmax, y, n, N, runs=1, ib=False, analytical=False):
 	plt.tick_params(axis='both', labelsize=20)
 	ax.ticklabel_format(style='sci')
 
-	plt.title(r'$r_{jk}=0.03, N=$' + str(N))
+	# plt.title(r'$r_{jk}=0.03, N=$' + str(N))
 
 	plt.tight_layout()
 
@@ -690,20 +701,24 @@ def epsChangeXRatio_g(xmin, xmax, y, n, N, runs=1, ib=False, gamma=2, exp=True, 
 
 	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(1500/110.27, 1200/110.27), dpi=110.27)
+	fig = plt.figure(figsize=(850/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	anlytXEps = np.array([x * np.sqrt(N), anlyt_epsilon_g(x, y, N=N, gamma=gamma, exp=exp, tildeM=tildeM)]).T
 	# ax.scatter(anlytXEps[:,0], xEps[:,1]/anlytXEps[:,1], s=10)
 
-	ax.errorbar(xEps[:,0], xEps[:,1]/anlytXEps[:,1], yerr=sigmaEps/anlytXEps[:,1], elinewidth=1, fmt='o', ms=2)
+	ax.errorbar(xEps[:,0], xEps[:,1]/anlytXEps[:,1], yerr=sigmaEps/anlytXEps[:,1], elinewidth=1, color='C5', fmt='x', ms=7)
 
-	plt.rc('text', usetex=True)
+	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=30)
+	ax.set_ylabel(r'$\frac{\epsilon_{sim}}{\epsilon_{ana}}$', fontsize=40)
+	plt.tick_params(axis='both', labelsize=20)
+	ax.ticklabel_format(style='sci')
 
-	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=15)
-	ax.set_ylabel(r'$\frac{\bar{\epsilon_{sim}}}{\epsilon_{ana}}$', fontsize=25)
+	plt.tight_layout()
 
-	plt.show()
+	plt.savefig(time_label())
+
+	plt.clf()
 
 	return
 
