@@ -11,7 +11,7 @@ from hm.utils.utils import time_label
 plt.rcParams.update(plt.rcParamsDefault)
 plt.style.use('seaborn-deep')
 
-def k_ratio(r_ib, r_jk, N, gamma=2, exp=True):
+def k_ratio(r_ib, r_jk, N, gamma=0.68726, exp=True):
 	'''
 	Returns the ratio of K values for tri and two-point distributions with certain parameter values 
 
@@ -62,18 +62,18 @@ def ratio_N(r_ib, r_jk, Nmin, Nmax, n, runs=1, size=1, gamma=2, exp=True, tildeM
 		ratios.append(np.mean(np.array(tempRatios)))
 		sRatios.append(np.std(np.array(tempRatios))/np.sqrt(runs))
 
-	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
+	fig = plt.figure(figsize=(860/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
-	ax.errorbar(N, ratios, yerr=sRatios, elinewidth=1, fmt='x', ms=4, color='C5')
+	ax.errorbar(N, ratios, yerr=sRatios, elinewidth=1, fmt='x', ms=6, color='C5')
 
 	ax.legend(frameon=False)
 
-	ax.set_xlabel(r'$N$', fontsize=20)
-	ax.set_ylabel(r'$\frac{K_{ij}}{K_{ib}}$', fontsize=20)
-	plt.tick_params(axis='both', labelsize=15)
+	ax.set_xlabel(r'$N$', fontsize=30)
+	ax.set_ylabel(r'$\frac{K_{i}}{\widetilde{K}_{i}}$', fontsize=40)
+	plt.tick_params(axis='both', labelsize=20)
 
-	plt.title('Normalisation constant ratio for gravity model - ' + r'$r_{ib} = %s$' % r_ib)
+	# plt.title('Normalisation constant ratio for gravity model - ' + r'$r_{ib} = %s$' % r_ib)
 
 	plt.tight_layout()
 
@@ -104,22 +104,24 @@ def ratio_rjk(r_ib, r_jkMin, r_jkMax, n, N, runs=1, size=1, gamma=None, exp=True
 		ratios.append(np.mean(np.array(tempRatios)))
 		sRatios.append(np.std(np.array(tempRatios)))
 
-	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
+	fig = plt.figure(figsize=(830/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
 
-	ax.errorbar(r_jk * np.sqrt(N), ratios, yerr=sRatios, elinewidth=1, fmt='x', ms=4, color='C5')
+	ax.errorbar(r_jk * np.sqrt(N), ratios, yerr=sRatios, elinewidth=1, fmt='x', ms=6, color='C5')
 
 	ax.legend(frameon=False)
 
-	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=20)
-	ax.set_ylabel(r'$\frac{K_{ij}}{K_{ib}}$', fontsize=20)
-	plt.tick_params(axis='both', labelsize=15)
+	loc = plticker.MultipleLocator(base=0.5) # you can change the base as desired
+	ax.xaxis.set_major_locator(loc)
+	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=30)
+	ax.set_ylabel(r'$\frac{K_{i}}{\widetilde{K}_{i}}$', fontsize=40)
+	plt.tick_params(axis='both', labelsize=20)
 
 	plt.ylim(0.8, 1.3)
 
-	plt.title('Normalisation constant ratio for gravity model - ' + r'$r_{ib} = %s$' % r_ib + ', ' + r'$N = %s$' % N)
+	# plt.title('Normalisation constant ratio for gravity model - ' + r'$r_{ib} = %s$' % r_ib + ', ' + r'$N = %s$' % N)
 
 	plt.tight_layout()
 

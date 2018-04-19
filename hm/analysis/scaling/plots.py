@@ -3,6 +3,8 @@ import numpy as np
 import seaborn as sns; sns.set()
 from tqdm import tqdm
 import scipy as sp
+from hm.utils.utils import time_label
+import matplotlib.ticker as plticker
 
 plt.rcParams.update(plt.rcParamsDefault)
 plt.style.use('seaborn-deep')
@@ -180,14 +182,15 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 		sigma_epss.append(sigma_eps)
 
 	# Alter figsize here
-	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
+	fig = plt.figure(figsize=(830/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	for i in range(len(mean_epss)):
 		# labels = [0] + d_maxs # to include the base (no clustering) level
 		labels = d_maxs
-		# ax.errorbar(bins/1000, mean_epss[i], elinewidth=1, fmt='x', ms=10, yerr=sigma_epss[i], label=r'$d_{max} = $' + str(labels[i]) + 'm')
-		ax.errorbar(bins/1000, mean_epss[i], elinewidth=1, fmt='x', ms=6, yerr=sigma_epss[i], label=str(labels[i]))
+		colours = ['grey','C1','C2','C3','C4','C5']
+		ax.errorbar(bins/1000, mean_epss[i], elinewidth=2, fmt='x', ms=8, yerr=sigma_epss[i], label=r'$d_{max} = $' + str(labels[i]) + 'm', mew=2, color=colours[i])
+		# ax.errorbar(bins/1000, mean_epss[i], elinewidth=1, fmt='x', ms=6, yerr=sigma_epss[i], label=str(labels[i]))
 
 	# Axes labels & Title
 
@@ -196,11 +199,16 @@ def eps_distance_hier(epsList, DMList, d_maxs, N, ib=True, model='gravity'):
 	else:
 		flow = 'backwards-flow'
 
-	ax.set_xlabel(r'Distance (Km)', fontsize=30, labelpad=20)
-	ax.set_ylabel(r'$<\epsilon>$', fontsize=30)
+	loc = plticker.MultipleLocator(base=0.2) # you can change the base as desired
+	ax.yaxis.set_major_locator(loc)
+	ax.set_xlabel(r'Distance (Km)', fontsize=30, labelpad=15)
+	ax.set_ylabel(r'$\langle\epsilon \rangle$', fontsize=40)
+	plt.ylim(0,1.3)
 	ax.legend(frameon=False, fontsize=20, loc='upper right')
 	ax.tick_params(labelsize=20)
 	plt.tight_layout()
+
+	plt.savefig(time_label())
 
 	return
 
@@ -377,7 +385,7 @@ def eps_distance_compare(epsList, DMList, N, labels=[r'Lenormand $\gamma$', r'Op
 
 	for i in range(len(mean_epss)):
 		# labels = [0] + d_maxs # to include the base (no clustering) level
-		ax.errorbar(bins/1000, mean_epss[i], elinewidth=1, fmt='x', ms=4, yerr=sigma_epss[i], label=labels[i])
+		ax.errorbar(bins/1000, mean_epss[i], elinewidth=2, fmt='x', ms=6, mew=2, yerr=sigma_epss[i], label=labels[i])
 
 	# Axes labels & Title
 
@@ -386,12 +394,18 @@ def eps_distance_compare(epsList, DMList, N, labels=[r'Lenormand $\gamma$', r'Op
 	else:
 		flow = 'backwards-flow'
 
-	ax.set_xlabel(r'Distance (Km)', fontsize=20, labelpad=20)
-	ax.set_ylabel(r'$|\langle \epsilon \rangle|$', fontsize=20)
+	# loc = plticker.MultipleLocator(base=0.2) # you can change the base as desired
+	# ax.yaxis.set_major_locator(loc)
+	ax.set_xlabel(r'Distance (Km)', fontsize=25, labelpad=15)
+	# ax.set_ylabel(r'$|\langle \epsilon \rangle|$', fontsize=30)
+	ax.set_ylabel(r'$\langle \epsilon \rangle$', fontsize=30)
 	# ax.set_title(r'Mean $\epsilon$ at different levels of clustering (' + flow + ')')
-	ax.legend(frameon=False, fontsize=15, loc='upper right')
-	ax.tick_params(labelsize=15)
+	ax.legend(frameon=False, fontsize=20, loc='upper right')
+	ax.tick_params(labelsize=20)
+	# plt.ylim(0,0.7)
 	plt.tight_layout()
+
+	plt.savefig(time_label())
 
 	return
 	

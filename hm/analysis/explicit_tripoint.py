@@ -386,7 +386,7 @@ def epsChangeY(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False, gamma=2,
 	ax.legend(frameon=False, fontsize=25)
 
 	# plt.rc('text', usetex=True)
-	yloc = plticker.MultipleLocator(base=0.002) # you can change the base as desired
+	yloc = plticker.MultipleLocator(base=0.004) # you can change the base as desired
 	ax.yaxis.set_major_locator(yloc)
 	xloc = plticker.MultipleLocator(base=0.5) # you can change the base as desired
 	ax.xaxis.set_major_locator(xloc)
@@ -395,7 +395,8 @@ def epsChangeY(ymin, ymax, x, n, N, runs=1, ib=False, analytical=False, gamma=2,
 	plt.tick_params(axis='both', labelsize=20)
 	ax.ticklabel_format(style='sci')
 
-	plt.ylim(-0.001,0.006)
+	# plt.ylim(-0.001,0.006)
+	plt.autoscale(enable=True)
 	plt.tight_layout()
 
 	# plt.title(r'$r_{ib}=0.4, N=$'+str(N))
@@ -499,14 +500,14 @@ def epsChangeYRatio_g(ymin, ymax, x, n, N, runs=1, ib=False, gamma=2, exp=True, 
 
 	ax.errorbar(yEps[:,0], yEps[:,1]/anlytYEps[:,1], yerr=sigmaEps/anlytYEps[:,1], elinewidth=1, fmt='x', ms=7, color='C5')
 
-	loc = plticker.MultipleLocator(base=0.0005)
+	loc = plticker.MultipleLocator(base=0.001)
 	ax.yaxis.set_major_locator(loc)
 	ax.set_xlabel(r'$r_{jk} \sqrt{N}$', fontsize=30)
 	ax.set_ylabel(r'$\frac{\epsilon_{sim}}{\epsilon_{ana}}$', fontsize=40)
 	plt.tick_params(axis='both', labelsize=20)
 	ax.ticklabel_format(style='sci')
 
-	plt.ylim(0.978,0.98)
+	plt.ylim(0.9795,0.984)
 
 	plt.tight_layout()
 
@@ -588,7 +589,7 @@ def epsChangeX(xmin, xmax, y, n, N, runs=1, ib=True, analytical=False, gamma=2, 
 
 	xEps = np.array([x * np.sqrt(N), np.array(meanEps)]).T
 
-	fig = plt.figure(figsize=(850/110.27, 800/110.27), dpi=300)
+	fig = plt.figure(figsize=(800/110.27, 800/110.27), dpi=300)
 	ax = fig.add_subplot(111)
 
 	ax.scatter(xEps[:,0], xEps[:,1], s=60, label='Simulation', color='C5', marker='x')
@@ -601,14 +602,15 @@ def epsChangeX(xmin, xmax, y, n, N, runs=1, ib=True, analytical=False, gamma=2, 
 
 	ax.legend(frameon=False, fontsize=25)
 
-	loc = plticker.MultipleLocator(base=0.004) # you can change the base as desired
-	ax.yaxis.set_major_locator(loc)
+	# loc = plticker.MultipleLocator(base=0.004) # you can change the base as desired
+	# ax.yaxis.set_major_locator(loc)
 	ax.set_xlabel(r'$r_{ib} \sqrt{N}$', fontsize=30)
 	ax.set_ylabel(r'$\epsilon$', fontsize=40)
 	plt.tick_params(axis='both', labelsize=20)
 	ax.ticklabel_format(style='sci')
 
-	plt.ylim(-0.0005,0.013)
+	# plt.ylim(-0.0005,0.013)
+	plt.autoscale(enable=True)
 
 	# plt.title(r'$r_{jk}=0.03, N=100$')
 
