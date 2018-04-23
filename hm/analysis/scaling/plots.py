@@ -408,6 +408,53 @@ def eps_distance_compare(epsList, DMList, N, labels=[r'Lenormand $\gamma$', r'Op
 	plt.savefig(time_label())
 
 	return
+
+def n_clusters(hierList, labels=['London', 'Birmingham']):
+	'''
+	Plots a bar chart of the number of clusters for each level of clustering for a list of population hierarchy objects
+	'''
+
+	fig = plt.figure(figsize=(840/110.27, 800/110.27), dpi=300)
+	ax = fig.add_subplot(111)
+
+	d_maxs = list(map(str,['0'] + hierList[0].d_maxs))
+	clusterNums = np.zeros((len(hierList),len(d_maxs)))
+	index = np.arange(len(d_maxs))
+
+	for i, hier in enumerate(hierList):
+
+		clusterNums[i][0] = hier.pop.size
+
+		for j, level in enumerate(hier.levels):
+			clusterNums[i][j+1] = level.clusters_num
+
+	bar_width = 0.35
+	opacity = 0.7
+	# opacity = 1
+	colours = ['C1','C4']
+
+	# for n, hier in enumerate(hierList):
+	# 	rect = 'rect_{}'.format(n+1)
+	# 	rect = ax.bar(index, clusterNums[n], bar_width, alpha=opacity, color=colours[n], label=labels[n])
+
+	rect1 = ax.bar(index, clusterNums[0], bar_width, alpha=opacity, color=colours[0], label=labels[0])
+	rect2 = ax.bar(index+bar_width, clusterNums[1], bar_width, alpha=opacity, color=colours[1], label=labels[1])
+
+	ax.set_xlabel(r'$d_{max}$ (m)', fontsize=25, labelpad=15)
+	ax.set_ylabel(r'$N_{clusters}$', fontsize=30, labelpad=15)
+	ax.tick_params(labelsize=20)
+	ax.set_xticks(index + bar_width / 2)
+	ax.set_xticklabels(d_maxs)
+	ax.legend(frameon=False, fontsize=20)
+
+	plt.tight_layout()
+
+	plt.savefig(time_label())
+
+	return 
+
+
+
 	
 
 
